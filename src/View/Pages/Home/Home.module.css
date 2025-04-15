@@ -1,0 +1,51 @@
+.homeContainer {
+  text-align: center;
+  padding: 2rem;
+}
+
+.welcomeTitle {
+  font-size: 2rem;
+  color: #ea580c;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.welcomeSubtitle {
+  font-size: 1.125rem;
+  color: #374151;
+  margin-bottom: 2rem;
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  border: 1px solid #eee;
+  text-align: right;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  cursor: pointer;
+}
+
+.cardTitle {
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: #ea580c;
+  margin-bottom: 0.5rem;
+}
+
+.cardText {
+  font-size: 0.875rem;
+  color: #555;
+}

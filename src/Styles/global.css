@@ -1,0 +1,38 @@
+body {
+  direction: rtl;
+  text-align: right;
+}
+
+
+.logo {
+  color: #ea580c;
+  font-size: 1.25rem;
+  font-weight: bold;
+  direction: rtl;
+}
+
+.app-container {
+  height: auto;
+  width: auto;
+  background: linear-gradient(to bottom, #f3f4f6, #ffffff);
+  padding: 2rem 1.5rem;
+  font-family: sans-serif;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  direction: rtl;
+  text-align: right;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.app-footer {
+  margin-top: 3rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #9ca3af;
+}

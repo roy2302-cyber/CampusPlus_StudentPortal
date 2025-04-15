@@ -1,0 +1,53 @@
+.helpContainer {
+    padding: 2rem;
+    direction: rtl;
+    background-color: #f9fafb;
+    font-family: 'Heebo', sans-serif;
+    min-height: 100vh;
+  }
+  
+  .headerSection {
+    margin-bottom: 2rem;
+  }
+  
+  .pageTitle {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1f2937;
+  }
+  
+  .section {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+  
+  .sectionTitle {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #111827;
+    margin-bottom: 1rem;
+    text-align: right;
+  }
+  
+  .faqList {
+    list-style: none;
+    padding: 0;
+    text-align: right;
+  }
+  
+  .faqList li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .faqList a {
+    text-decoration: none;
+    color: #2563eb;
+    transition: color 0.3s;
+  }
+  
+  .faqList a:hover {
+    color: #1d4ed8;
+  }
+  
