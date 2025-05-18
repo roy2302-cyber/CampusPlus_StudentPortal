@@ -1,25 +1,45 @@
 import React, { useState } from 'react';
 import styles from './Register.module.css';
 import { useNavigate, Link } from 'react-router-dom';
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth } from "../../../firebase";
 
 export default function Register() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
-  const handleRegister = () => {
-    if (fullName && email && password && confirmPassword) {
-      if (password !== confirmPassword) {
-        alert("אישור הסיסמה לא תואם");
-        return;
-      }
-      navigate("/dashboard");
-    } else {
-      alert("נא למלא את כל השדות");
-    }
-  };
+ const handleRegister = async () => {
+  setErrorMessage("");
+  setSuccessMessage("");
+
+  if (!fullName || !email || !password || !confirmPassword) {
+    setErrorMessage("נא למלא את כל השדות");
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    setErrorMessage("אישור הסיסמה לא תואם");
+    return;
+  }
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(userCredential.user, {
+      displayName: fullName
+    });
+
+    setSuccessMessage("נרשמת בהצלחה! כעת תוכל להתחבר");
+    setTimeout(() => navigate("/"), 1500);
+  } catch (error) {
+    setErrorMessage("שגיאה ברישום: " + error.message);
+  }
+};
+
 
   return (
     <div className={styles.registerContainer}>
@@ -27,50 +47,29 @@ export default function Register() {
 
       <div className={styles.formGroup}>
         <label className={styles.formLabel}>שם מלא</label>
-        <input
-          type="text"
-          className={styles.formInput}
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-        />
+        <input type="text" className={styles.formInput} value={fullName} onChange={(e) => setFullName(e.target.value)} />
       </div>
 
       <div className={styles.formGroup}>
         <label className={styles.formLabel}>אימייל</label>
-        <input
-          type="email"
-          className={styles.formInput}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <input type="email" className={styles.formInput} value={email} onChange={(e) => setEmail(e.target.value)} />
       </div>
 
       <div className={styles.formGroup}>
         <label className={styles.formLabel}>סיסמה</label>
-        <input
-          type="password"
-          className={styles.formInput}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <input type="password" className={styles.formInput} value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
 
       <div className={styles.formGroup}>
         <label className={styles.formLabel}>אישור סיסמה</label>
-        <input
-          type="password"
-          className={styles.formInput}
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
+        <input type="password" className={styles.formInput} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
       </div>
 
-      <button
-        onClick={handleRegister}
-        className={styles.registerButton}
-      >
-        צור חשבון
-      </button>
+      {errorMessage && <p className={styles.errorText}>{errorMessage}</p>}
+      {successMessage && <p className={styles.successText}>{successMessage}</p>}
+
+      <button onClick={handleRegister} className={styles.registerButton}>צור חשבון</button>
+
       <p className={styles.registerPrompt}>
         כבר יש לך חשבון? <Link to="/" className={styles.registerLink}>התחבר כאן</Link>
       </p>

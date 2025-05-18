@@ -1,5 +1,8 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";
+
 import Home from "./View/Pages/Home/Home.jsx";
 import Login from "./View/Pages/Login/Login.jsx";
 import Register from "./View/Pages/Register/Register.jsx";
@@ -14,33 +17,58 @@ import Writing from "./View/Pages/Writing/Writing.jsx";
 import Navigation from "./View/Components/Navigation/Navigation.jsx";
 
 export default function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // בזמן טעינה – אל תרנדר כלום
+  if (loading) return null;
+
   return (
     <Router>
       <div className="app-container">
-        <header className="app-header">
-        <Navigation />
-          <h1 className="logo">קמפוס+</h1>
-        </header>
-
-     
+        {user && (
+          <header className="app-header">
+            <Navigation />
+            <h1 className="logo">קמפוס+</h1>
+          </header>
+        )}
 
         <Routes>
+          {/* עמודים פתוחים תמיד */}
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/help" element={<Help />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/community" element={<Community />} />
-          <Route path="/summaries" element={<Summaries />} />
-          <Route path="/tasks" element={<Tasks />} />
-          <Route path="/writing" element={<Writing />} />
+
+          {/* עמודים מוגנים */}
+          {user ? (
+            <>
+              <Route path="/home" element={<Home />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/help" element={<Help />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/community" element={<Community currentUser={user.displayName} />} />
+              <Route path="/summaries" element={<Summaries user={user} />} />
+              <Route path="/tasks" element={<Tasks />} />
+              <Route path="/writing" element={<Writing />} />
+            </>
+          ) : (
+            <Route path="*" element={<Navigate to="/" />} />
+          )}
         </Routes>
 
-        <footer className="app-footer">
-        © כל הזכויות שמורות לקמפוס+
-        </footer>
+        {user && (
+          <footer className="app-footer">
+            © כל הזכויות שמורות לקמפוס+
+          </footer>
+        )}
       </div>
     </Router>
   );

@@ -68,4 +68,17 @@
     text-decoration: underline;
   }
   
+  .errorText {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  text-align: center;
+}
   
+.successText {
+  color: green;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  text-align: center;
+  font-weight: bold;
+}

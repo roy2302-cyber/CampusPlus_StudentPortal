@@ -23,3 +23,29 @@
   background-color: #ea580c;
   color: white;
 }
+
+.logoutButton {
+  background: none;
+  border: none;
+  padding: 0.25rem 0.75rem; /* כמו navLink */
+  margin-right: 0;
+  color: #374151; /* אותו צבע */
+  font-size: 0.9rem; /* זהה ל-navLink */
+  cursor: pointer;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: normal;
+  transition: background-color 0.3s, color 0.2s;
+}
+
+.logoutButton:hover {
+  background-color: #f3f4f6; /* כמו hover של navLink */
+  color: #ea580c; /* צבע כתום */
+  font-weight: bold;
+}
+
+.logoutButton.active {
+  background-color: #ea580c;
+  color: white;
+}
+

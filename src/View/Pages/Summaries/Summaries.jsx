@@ -1,41 +1,159 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './Summaries.module.css';
+import { db, auth } from '../../../firebase';
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  onSnapshot,
+  doc,
+  deleteDoc,
+  updateDoc
+} from 'firebase/firestore';
+import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { storage } from '../../../firebase';
 
-export default function Summaries({ currentUser = 'סטודנט_אחד' }) {
+
+
+export default function Summaries({user}) {
   const [summaries, setSummaries] = useState([]);
   const [title, setTitle] = useState("");
   const [file, setFile] = useState(null);
-  const [hoverRatingIndex, setHoverRatingIndex] = useState(null);
+  const [hoverRating, setHoverRating] = useState({ index: null, score: null });
   const [userRated, setUserRated] = useState({});
   const [favorites, setFavorites] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [alreadyRatedMessageIndex, setAlreadyRatedMessageIndex] = useState(null);
 
-  const handleAddSummary = () => {
-    if (title.trim() && file) {
-      const newEntry = {
-        title,
-        fileName: file.name,
-        author: currentUser,
-        ratings: [],
-        averageRating: 0
+  
+useEffect(() => {
+  const unsub = onSnapshot(collection(db, "summaries"), (snapshot) => {
+    const data = snapshot.docs.map((doc) => {
+      const d = doc.data();
+      return {
+        id: doc.id, // ✅ חשוב מאוד!
+        ...d,
+        author: d.uploader || "אנונימי",
+        ratings: d.ratings || [],
+        averageRating: d.averageRating || 0
       };
-      setSummaries([...summaries, newEntry]);
-      setTitle("");
-      setFile(null);
-    }
-  };
+    });
+    setSummaries(data); // ← אל תשכח לעדכן את הסטייט!
+  });
 
-  const handleRate = (index, score) => {
-    if (userRated[index]) return;
+  return () => unsub();
+}, []);
+
+ const handleAddSummary = async () => {
+
+  setErrorMessage("");
+  setSuccessMessage("");
+
+  if (!title.trim()) {
+
+    setErrorMessage("יש להזין כותרת לסיכום.");
+    setTimeout(() => setErrorMessage(""), 2000)
+    return;
+  }
+
+  if (!file) {
+    setErrorMessage("יש לבחור קובץ להעלאה.");
+    setTimeout(() => setErrorMessage(""), 2000)
+    return;
+  }
+
+ 
+  if (!user) {
+    setErrorMessage("חובה להיות מחובר כדי להעלות סיכום.");
+    setTimeout(() => setErrorMessage(""), 2000)
+    return;
+  }
+
+  try {
+   const fileRef = storageRef(storage, `summaries/${Date.now()}_${file.name}`);
+    await uploadBytes(fileRef, file);
+    const fileUrl = await getDownloadURL(fileRef);
+
+    await addDoc(collection(db, "summaries"), {
+      title,
+      fileUrl,
+      uploader: user. displayName,
+      ratings: [],
+      averageRating: 0,
+      createdAt: serverTimestamp()
+    });
+
+    setSuccessMessage("הסיכום הועלה בהצלחה ✅")
+    setTimeout(() => setSuccessMessage(""), 2000)
+    setTitle("");
+    setFile(null);
+  } catch (err) {
+    setErrorMessage("אירעה שגיאה בהעלאה: " + err.message);
+  }
+};
+
+
+
+ const handleRate = async (index, score) => {
+  const summary = summaries[index]; 
+
+if (summary.ratings && summary.ratings[user.uid]) {
+  setAlreadyRatedMessageIndex(index);
+  setTimeout(() => setAlreadyRatedMessageIndex(null), 2000); // 🕑 הסתרה אוטומטית
+  return;
+}
+
+
+  const updatedRatings = { ...summary.ratings, [user.uid]: score };
+  const scores = Object.values(updatedRatings);
+  const averageRating = scores.reduce((a, b) => a + b, 0) / scores.length;
+
+  try {
+    const summaryRef = doc(db, "summaries", summary.id);
+    await updateDoc(summaryRef, {
+      ratings: updatedRatings,
+      averageRating: averageRating
+    });
+
     const updated = [...summaries];
-    updated[index].ratings.push(score);
-    const sum = updated[index].ratings.reduce((a, b) => a + b, 0);
-    updated[index].averageRating = sum / updated[index].ratings.length;
+    updated[index].ratings = updatedRatings;
+    updated[index].averageRating = averageRating;
     setSummaries(updated);
     setUserRated({ ...userRated, [index]: true });
-    setHoverRatingIndex(null);
-  };
+    setHoverRating(null);
+    setAlreadyRatedMessageIndex(null)
+  } catch (err) {
+    console.error("שגיאה בעדכון הדירוג:", err);
+    setErrorMessage("שגיאה בשמירת הדירוג 😔");
+  }
+};
+
+ const handleDelete = async (id, fileUrl) => {
+  const confirmDelete = window.confirm("האם אתה בטוח שברצונך למחוק את הסיכום?");
+  if (!confirmDelete) return;
+
+  try {
+    // מחיקת המסמך מה־Firestore
+    await deleteDoc(doc(db, "summaries", id));
+
+    // מחיקת הקובץ מה־Storage לפי ה־URL
+    const path = decodeURIComponent(new URL(fileUrl).pathname.split("/o/")[1]);
+    const fileRef = storageRef(storage, path);
+    await deleteObject(fileRef);
+
+    // עדכון ה־state המקומי
+    setSummaries((prev) => prev.filter((summary) => summary.id !== id));
+    setSuccessMessage("הסיכום נמחק בהצלחה ✅");
+    setTimeout(() => setSuccessMessage(""), 2000);
+  } catch (err) {
+    console.error("שגיאה במחיקה:", err);
+    setErrorMessage("שגיאה במחיקת הסיכום 😔");
+    setTimeout(() => setErrorMessage(""), 2000);
+  }
+};
 
   const toggleFavorite = (title) => {
     setFavorites((prev) =>
@@ -43,18 +161,25 @@ export default function Summaries({ currentUser = 'סטודנט_אחד' }) {
     );
   };
 
-  const renderStars = (avg) => {
-    const fullStars = Math.floor(avg);
-    const halfStar = avg - fullStars >= 0.5;
-    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
-    return (
-      <span>
-        {Array(fullStars).fill('⭐').map((s, i) => <span key={`f${i}`}>{s}</span>)}
-        {halfStar && <span>⭐️</span>}
-        {Array(emptyStars).fill('☆').map((s, i) => <span key={`e${i}`}>{s}</span>)}
-      </span>
-    );
-  };
+  const renderStars = (ratingsObj) => {
+  const scores = ratingsObj ? Object.values(ratingsObj) : [];
+  const avg = scores.length > 0
+    ? scores.reduce((a, b) => a + b, 0) / scores.length
+    : 0;
+
+  const fullStars = Math.floor(avg);
+  const halfStar = avg - fullStars >= 0.5;
+  const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+
+  return (
+    <span>
+      {Array(fullStars).fill('⭐').map((s, i) => <span key={`f${i}`}>{s}</span>)}
+      {halfStar && <span>⭐️</span>}
+      {Array(emptyStars).fill('☆').map((s, i) => <span key={`e${i}`}>{s}</span>)}
+    </span>
+  );
+};
+
 
   const filteredSummaries = summaries.filter((summary) => {
     const matchesSearch = summary.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -90,12 +215,16 @@ export default function Summaries({ currentUser = 'סטודנט_אחד' }) {
           placeholder="כותרת הסיכום"
           className={styles.summaryInput}
         />
-
+        
         <input
           type="file"
           onChange={(e) => setFile(e.target.files[0])}
           className={styles.fileInput}
         />
+        
+        {errorMessage && <p className={styles.errorText}>{errorMessage}</p>}
+        {successMessage && <p className={styles.successText}>{successMessage}</p>}
+
 
         <button onClick={handleAddSummary} className={styles.uploadButton}>
           העלה
@@ -114,21 +243,59 @@ export default function Summaries({ currentUser = 'סטודנט_אחד' }) {
               {favorites.includes(summary.title) ? '❤️' : '🤍'}
             </button>
             <div className={styles.summaryMeta}>
-              העלאה ע"י: {summary.author}<br />
-              דירוג ממוצע: {summary.averageRating.toFixed(1)} ({summary.ratings.length} דירוגים)<br />
-              {renderStars(summary.averageRating)}
+  הועלה ע"י: {summary.author}<br />
+  <div className={styles.linkAndDeleteWrapper}>
+  <a
+    href={summary.fileUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    className={styles.viewLink}
+  >
+    צפייה בקובץ 📄
+  </a>
+
+  {summary.uploader == user.displayName && (
+    <button
+      onClick={() => handleDelete(summary.id, summary.fileUrl)}
+      className={styles.deleteBtn}
+    >
+     מחק סיכום 🗑️
+    </button>
+  )}
+</div>
+  <br />
+דירוג ממוצע: {summary.ratings ? (
+  (Object.values(summary.ratings).reduce((a, b) => a + b, 0) / Object.values(summary.ratings).length).toFixed(1)
+) : 0} ⭐ <br />
+
+סה"כ דירוגים: {summary.ratings ? Object.keys(summary.ratings).length : 0} 👤<br />
+
+
+{renderStars(summary.ratings)}
+
               <div className={styles.starRatingBar}>
                 דרג סיכום:
                 {[1, 2, 3, 4, 5].map((num) => (
                   <span
                     key={num}
                     onClick={() => handleRate(index, num)}
-                    onMouseEnter={() => setHoverRatingIndex(num)}
-                    onMouseLeave={() => setHoverRatingIndex(null)}
-                    className={`${styles.star} ${hoverRatingIndex >= num ? styles.previewStar : ''} ${userRated[index] ? styles.disabledStar : ''}`}
+                    onMouseEnter={() => setHoverRating({ index, score: num })}
+                    onMouseLeave={() => setHoverRating({ index: null, score: null })}
+                   className={`${styles.star} ${hoverRating.index === index && hoverRating.score >= num ? styles.previewStar : ''} ${userRated[index] ? styles.disabledStar : ''}`}
                   >⭐</span>
                 ))}
               </div>
+             <div className={styles.ratingMessageBox}>
+         {alreadyRatedMessageIndex === index && (
+         <p className={styles.alreadyRatedText}>כבר דירגת את הסיכום הזה</p>
+        )}
+        {hoverRating.index === index && !userRated[index] && (
+        <p className={styles.previewRatingText}>
+          דירוג: {hoverRating.score} ⭐
+        </p>
+         )}
+
+           </div>
             </div>
           </li>
         ))}
