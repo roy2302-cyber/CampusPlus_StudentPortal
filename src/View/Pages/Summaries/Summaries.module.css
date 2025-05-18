@@ -138,3 +138,74 @@
     transform: scale(0.97);
     background-color: #c2410c;
   }
+
+  .errorText {
+  color: red;
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+
+.successText {
+  color: green;
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+
+.alreadyRatedText {
+  color: #ffa500;
+  font-weight: bold;
+  margin-top: 5px;
+  font-size: 0.9rem;
+}
+.previewRatingText {
+  color: #999;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.ratingMessageBox {
+  min-height: 1.2rem; /* או יותר אם צריך */
+}
+
+.viewLink {
+  display: inline-block;
+  background-color: #2563eb; /* כחול */
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: none;
+}
+
+.viewLink:hover {
+  background-color: #1d4ed8;
+}
+
+.deleteBtn {
+  display: inline-block;
+  background-color: #dc2626; /* אדום */
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: none;
+}
+
+.deleteBtn:hover {
+  background-color: #b91c1c;
+}
+
+.linkAndDeleteWrapper {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
