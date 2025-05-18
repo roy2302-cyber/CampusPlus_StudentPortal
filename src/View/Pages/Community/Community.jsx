@@ -18,7 +18,7 @@ export default function Community({ currentUser }) {
   const [content, setContent] = useState("");
   const [answerInputs, setAnswerInputs] = useState({});
 
-  // ✅ useEffect - בפנים
+
  useEffect(() => {
   const unsub = onSnapshot(collection(db, "questions"), (snapshot) => {
     const fetchedQuestions = snapshot.docs.map(doc => {

@@ -28,7 +28,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // בזמן טעינה – אל תרנדר כלום
+
   if (loading) return null;
 
   return (
@@ -42,11 +42,10 @@ export default function App() {
         )}
 
         <Routes>
-          {/* עמודים פתוחים תמיד */}
+
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* עמודים מוגנים */}
           {user ? (
             <>
               <Route path="/home" element={<Home />} />

@@ -34,14 +34,14 @@ useEffect(() => {
     const data = snapshot.docs.map((doc) => {
       const d = doc.data();
       return {
-        id: doc.id, // ✅ חשוב מאוד!
+        id: doc.id, 
         ...d,
         author: d.uploader || "אנונימי",
         ratings: d.ratings || [],
         averageRating: d.averageRating || 0
       };
     });
-    setSummaries(data); // ← אל תשכח לעדכן את הסטייט!
+    setSummaries(data); 
   });
 
   return () => unsub();
@@ -102,7 +102,7 @@ useEffect(() => {
 
 if (summary.ratings && summary.ratings[user.uid]) {
   setAlreadyRatedMessageIndex(index);
-  setTimeout(() => setAlreadyRatedMessageIndex(null), 2000); // 🕑 הסתרה אוטומטית
+  setTimeout(() => setAlreadyRatedMessageIndex(null), 2000); 
   return;
 }
 
@@ -136,15 +136,13 @@ if (summary.ratings && summary.ratings[user.uid]) {
   if (!confirmDelete) return;
 
   try {
-    // מחיקת המסמך מה־Firestore
+ 
     await deleteDoc(doc(db, "summaries", id));
 
-    // מחיקת הקובץ מה־Storage לפי ה־URL
     const path = decodeURIComponent(new URL(fileUrl).pathname.split("/o/")[1]);
     const fileRef = storageRef(storage, path);
     await deleteObject(fileRef);
 
-    // עדכון ה־state המקומי
     setSummaries((prev) => prev.filter((summary) => summary.id !== id));
     setSuccessMessage("הסיכום נמחק בהצלחה ✅");
     setTimeout(() => setSuccessMessage(""), 2000);
@@ -281,7 +279,7 @@ if (summary.ratings && summary.ratings[user.uid]) {
                     onClick={() => handleRate(index, num)}
                     onMouseEnter={() => setHoverRating({ index, score: num })}
                     onMouseLeave={() => setHoverRating({ index: null, score: null })}
-                   className={`${styles.star} ${hoverRating.index === index && hoverRating.score >= num ? styles.previewStar : ''} ${userRated[index] ? styles.disabledStar : ''}`}
+                className={`${styles.star} ${hoverRating && hoverRating.index === index && hoverRating.score >= num ? styles.previewStar : ''} ${userRated[index] ? styles.disabledStar : ''}`}
                   >⭐</span>
                 ))}
               </div>
@@ -289,11 +287,11 @@ if (summary.ratings && summary.ratings[user.uid]) {
          {alreadyRatedMessageIndex === index && (
          <p className={styles.alreadyRatedText}>כבר דירגת את הסיכום הזה</p>
         )}
-        {hoverRating.index === index && !userRated[index] && (
-        <p className={styles.previewRatingText}>
-          דירוג: {hoverRating.score} ⭐
-        </p>
-         )}
+       {hoverRating?.index === index && !userRated[index] && (
+  <p className={styles.previewRatingText}>
+    דירוג: {hoverRating?.score} ⭐
+  </p>
+)}
 
            </div>
             </div>
