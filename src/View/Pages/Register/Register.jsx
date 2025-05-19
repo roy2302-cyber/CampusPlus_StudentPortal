@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import styles from './Register.module.css';
 import { useNavigate, Link } from 'react-router-dom';
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "../../../firebase";
+import { auth, db} from "../../../firebase";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+ 
 
 export default function Register() {
   const [fullName, setFullName] = useState("");
@@ -29,8 +31,17 @@ export default function Register() {
 
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    
+    // עדכון השם בפרופיל
     await updateProfile(userCredential.user, {
       displayName: fullName
+    });
+
+    // שמירת המשתמש במסד הנתונים
+    await setDoc(doc(db, "users", userCredential.user.uid), {
+      displayName: fullName,
+      email: email,
+      createdAt: serverTimestamp()
     });
 
     setSuccessMessage("נרשמת בהצלחה! כעת תוכל להתחבר");
@@ -39,6 +50,7 @@ export default function Register() {
     setErrorMessage("שגיאה ברישום: " + error.message);
   }
 };
+
 
 
   return (

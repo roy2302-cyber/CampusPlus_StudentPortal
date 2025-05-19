@@ -17,6 +17,13 @@ export default function Community({ currentUser }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [answerInputs, setAnswerInputs] = useState({});
+  const [titleError, setTitleError] = useState("");
+  const [contentError, setContentError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [answerErrors, setAnswerErrors] = useState({});
+  const [answerSuccess, setAnswerSuccess] = useState({});
+
+
 
 
  useEffect(() => {
@@ -37,34 +44,84 @@ export default function Community({ currentUser }) {
 }, []);
 
 
-  const handleAddQuestion = async () => {
-    if (title.trim() && content.trim()) {
-      await addDoc(collection(db, "questions"), {
-        title,
-        content,
-        author: currentUser,
-        likes: [],
-        answers: []
-      });
-      setTitle("");
-      setContent("");
-    }
-  };
+ const handleAddQuestion = async () => {
+  const isTitleEmpty = !title.trim();
+  const isContentEmpty = !content.trim();
+
+  if (isTitleEmpty && isContentEmpty) {
+    setTitleError("יש למלא כותרת שאלה.");
+    setContentError("");
+
+    setTimeout(() => setTitleError(""), 2000);
+    return;
+  }
+
+  if (isTitleEmpty) {
+    setTitleError("יש למלא כותרת שאלה.");
+    setContentError("");
+
+    setTimeout(() => setTitleError(""), 2000);
+    return;
+  }
+
+  if (isContentEmpty) {
+    setContentError("יש למלא תוכן שאלה.");
+    setTitleError("");
+
+    setTimeout(() => setContentError(""), 2000);
+    return;
+  }
+
+
+  setTitleError("");
+  setContentError("");
+
+  await addDoc(collection(db, "questions"), {
+    title,
+    content,
+    author: currentUser,
+    likes: [],
+    answers: []
+  });
+
+  setTitle("");
+  setContent("");
+  setSuccessMessage("השאלה פורסמה בהצלחה!");
+  setTimeout(() => setSuccessMessage(""), 2000);
+};
+
+
 
   const handleAddAnswer = async (questionId, index) => {
   const answerText = answerInputs[index];
-  if (!answerText || !answerText.trim()) return;
 
-  const questionRef = doc(db, "questions", questionId);
-  await updateDoc(questionRef, {
-    answers: arrayUnion({
-      text: answerText,
-      author: currentUser
-    })
-  });
+  if (!answerText || !answerText.trim()) {
+    setAnswerErrors(prev => ({ ...prev, [index]: "יש להזין תגובה." }));
+    setAnswerSuccess(prev => ({ ...prev, [index]: "" }));
+    return;
+  }
 
-  setAnswerInputs({ ...answerInputs, [index]: "" });
+  try {
+    const questionRef = doc(db, "questions", questionId);
+    await updateDoc(questionRef, {
+      answers: arrayUnion({
+        text: answerText,
+        author: currentUser
+      })
+    });
+
+    setAnswerInputs(prev => ({ ...prev, [index]: "" }));
+    setAnswerErrors(prev => ({ ...prev, [index]: "" }));
+    setAnswerSuccess(prev => ({ ...prev, [index]: "התגובה פורסמה בהצלחה!" }));
+
+    setTimeout(() => {
+      setAnswerSuccess(prev => ({ ...prev, [index]: "" }));
+    }, 2000);
+  } catch (error) {
+    console.error("שגיאה בהוספת תגובה:", error);
+  }
 };
+
 
 
   const handleLikeToggle = async (questionId, likesArray) => {
@@ -113,7 +170,10 @@ export default function Community({ currentUser }) {
           onChange={(e) => setContent(e.target.value)}
           className={styles.questionTextarea}
         ></textarea>
+        {titleError && <p className={styles.errorMessage}>{titleError}</p>}
+        {contentError && <p className={styles.errorMessage}>{contentError}</p>}
         <button onClick={handleAddQuestion} className={styles.submitButton}>פרסם</button>
+        {successMessage && <p className={styles.successMessage}>{successMessage}</p>}
       </div>
 
       <div className={styles.questionList}>
@@ -130,7 +190,7 @@ export default function Community({ currentUser }) {
                   onClick={() => handleDeleteQuestion(q.id)}
                   className={styles.deleteButton}
                 >
-                  מחק שאלה 🗑️
+                  מחק שאלה 
                 </button>
               )}
             </div>
@@ -184,9 +244,18 @@ export default function Community({ currentUser }) {
               onChange={(e) => setAnswerInputs({ ...answerInputs, [index]: e.target.value })}
               className={styles.answerTextarea}
             ></textarea>
+            {answerErrors[index] && (
+            <p className={styles.errorMessage}>{answerErrors[index]}</p>
+                 )}  
+
+            {answerSuccess[index] && (
+            <p className={styles.successMessage}>{answerSuccess[index]}</p>
+                )}
+
             <button onClick={() => handleAddAnswer(q.id, index)} className={styles.submitButton}>
-              הגב
+                הגב
             </button>
+            
           </div>
         ))}
       </div>

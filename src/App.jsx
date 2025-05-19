@@ -56,7 +56,7 @@ export default function App() {
               <Route path="/community" element={<Community currentUser={user.displayName} />} />
               <Route path="/summaries" element={<Summaries user={user} />} />
               <Route path="/tasks" element={<Tasks />} />
-              <Route path="/writing" element={<Writing />} />
+              <Route path="/writing" element={<Writing currentUser={user.displayName} />} />
             </>
           ) : (
             <Route path="*" element={<Navigate to="/" />} />
