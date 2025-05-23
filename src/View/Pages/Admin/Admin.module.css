@@ -84,3 +84,82 @@
     color: #1f2937;
     margin-bottom: 1rem;
   }
+
+  .statGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.statCard {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.statLabel {
+  font-size: 1rem;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.green {
+  color: #10b981; 
+}
+
+.blue {
+  color: #3b82f6; 
+}
+
+.purple {
+  color: #8b5cf6; 
+}
+
+.red {
+  color: #ef4444; 
+}
+
+.gray {
+  color: #6b7280; 
+}
+
+.save {
+  background-color: #2563eb; 
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.save:hover {
+  background-color: #1d4ed8;
+}
+
+.cancel {
+  background-color: #e5e7eb; 
+  color: #1f2937;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.cancel:hover {
+  background-color: #d1d5db;
+}
+

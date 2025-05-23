@@ -7,10 +7,14 @@ import {
   onSnapshot,
   doc,
   deleteDoc,
+  getDoc,
   arrayUnion,
   arrayRemove
 } from "firebase/firestore";
-import { db, auth } from "../../../firebase";
+import { db, auth, functions } from "../../../firebase";
+import { httpsCallable } from 'firebase/functions';
+
+const sendEmailNotification = httpsCallable(functions, 'sendEmailNotification');
 
 export default function Community({ currentUser }) {
   const [questions, setQuestions] = useState([]);
@@ -22,110 +26,152 @@ export default function Community({ currentUser }) {
   const [successMessage, setSuccessMessage] = useState("");
   const [answerErrors, setAnswerErrors] = useState({});
   const [answerSuccess, setAnswerSuccess] = useState({});
+  const [userSettingsMap, setUserSettingsMap] = useState({});
 
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "questions"), async (snapshot) => {
+      const fetchedQuestions = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          likes: data.likes || [],
+          answers: data.answers || [],
+          ...data
+        };
+      });
 
+      setQuestions(fetchedQuestions);
 
+      const allUserIds = new Set();
+      fetchedQuestions.forEach(q => {
+        allUserIds.add(q.authorId);
+        q.answers?.forEach(a => allUserIds.add(a.authorId));
+      });
 
- useEffect(() => {
-  const unsub = onSnapshot(collection(db, "questions"), (snapshot) => {
-    const fetchedQuestions = snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        likes: data.likes || [],
-        answers: data.answers || [],
-        ...data
-      };
+      const userSettingsData = {};
+      for (const uid of allUserIds) {
+        const userRef = doc(db, "userSettings", uid);
+        const snap = await getDoc(userRef);
+        if (snap.exists()) {
+          userSettingsData[uid] = snap.data();
+        }
+      }
+
+      if (currentUser?.uid && currentUser?.settings) {
+        userSettingsData[currentUser.uid] = currentUser.settings;
+      }
+
+      setUserSettingsMap(userSettingsData);
     });
-    setQuestions(fetchedQuestions);
-  });
 
-  return () => unsub();
-}, []);
+    return () => unsub();
+  }, [currentUser]);
 
+  const getDisplayName = (uid, fallback) => {
+    const settings = userSettingsMap[uid];
+    if (settings?.profileVisibility && currentUser?.uid !== uid && !currentUser?.isAdmin) {
+      return "משתמש אנונימי";
+    }
+    return fallback;
+  };
 
- const handleAddQuestion = async () => {
-  const isTitleEmpty = !title.trim();
-  const isContentEmpty = !content.trim();
+  const handleAddQuestion = async () => {
+    if (!currentUser?.uid) return;
 
-  if (isTitleEmpty && isContentEmpty) {
-    setTitleError("יש למלא כותרת שאלה.");
-    setContentError("");
+    if (!title.trim()) {
+      setTitleError("יש למלא כותרת שאלה.");
+      setTimeout(() => setTitleError(""), 2000);
+      return;
+    }
+    if (!content.trim()) {
+      setContentError("יש למלא תוכן שאלה.");
+      setTimeout(() => setContentError(""), 2000);
+      return;
+    }
 
-    setTimeout(() => setTitleError(""), 2000);
-    return;
-  }
-
-  if (isTitleEmpty) {
-    setTitleError("יש למלא כותרת שאלה.");
-    setContentError("");
-
-    setTimeout(() => setTitleError(""), 2000);
-    return;
-  }
-
-  if (isContentEmpty) {
-    setContentError("יש למלא תוכן שאלה.");
     setTitleError("");
+    setContentError("");
 
-    setTimeout(() => setContentError(""), 2000);
-    return;
-  }
+    await addDoc(collection(db, "questions"), {
+      title,
+      content,
+      author: currentUser.displayName || "משתמש ללא שם",
+      authorId: currentUser.uid,
+      likes: [],
+      answers: []
+    });
 
+    await sendEmailNotification({
+      to: "royye5869@gmail.com",
+      subject: "שאלה חדשה פורסמה בקהילת הלמידה",
+      html: `
+        <div dir="rtl" style="text-align:right; font-family:Arial,sans-serif;">
+          <h2>שאלה חדשה פורסמה בקמפוס+</h2>
+          <p><strong>נושא:</strong> ${title}</p>
+          <p><strong>תוכן:</strong> ${content}</p>
+        </div>`
+    });
 
-  setTitleError("");
-  setContentError("");
-
-  await addDoc(collection(db, "questions"), {
-    title,
-    content,
-    author: currentUser,
-    likes: [],
-    answers: []
-  });
-
-  setTitle("");
-  setContent("");
-  setSuccessMessage("השאלה פורסמה בהצלחה!");
-  setTimeout(() => setSuccessMessage(""), 2000);
-};
-
-
+    setTitle("");
+    setContent("");
+    setSuccessMessage("השאלה פורסמה בהצלחה!");
+    setTimeout(() => setSuccessMessage(""), 2000);
+  };
 
   const handleAddAnswer = async (questionId, index) => {
-  const answerText = answerInputs[index];
+    if (!currentUser?.uid) return;
 
-  if (!answerText || !answerText.trim()) {
-    setAnswerErrors(prev => ({ ...prev, [index]: "יש להזין תגובה." }));
-    setAnswerSuccess(prev => ({ ...prev, [index]: "" }));
-    return;
-  }
-
-  try {
-    const questionRef = doc(db, "questions", questionId);
-    await updateDoc(questionRef, {
-      answers: arrayUnion({
-        text: answerText,
-        author: currentUser
-      })
-    });
-
-    setAnswerInputs(prev => ({ ...prev, [index]: "" }));
-    setAnswerErrors(prev => ({ ...prev, [index]: "" }));
-    setAnswerSuccess(prev => ({ ...prev, [index]: "התגובה פורסמה בהצלחה!" }));
-
-    setTimeout(() => {
+    const answerText = answerInputs[index];
+    if (!answerText || !answerText.trim()) {
+      setAnswerErrors(prev => ({ ...prev, [index]: "יש להזין תגובה." }));
       setAnswerSuccess(prev => ({ ...prev, [index]: "" }));
-    }, 2000);
-  } catch (error) {
-    console.error("שגיאה בהוספת תגובה:", error);
-  }
-};
+      return;
+    }
 
+    const question = questions.find(q => q.id === questionId);
 
+    try {
+      await updateDoc(doc(db, "questions", questionId), {
+        answers: arrayUnion({
+          text: answerText,
+          author: currentUser.displayName,
+          authorId: currentUser.uid
+        })
+      });
+
+      if (question && question.authorId !== currentUser.uid) {
+        const authorDoc = await getDoc(doc(db, "users", question.authorId));
+        const authorEmail = authorDoc.exists() ? authorDoc.data().email : null;
+
+        if (authorEmail) {
+          await sendEmailNotification({
+            to: authorEmail,
+            subject: "תגובה חדשה לשאלה שלך בקמפוס+",
+            html: `
+              <div dir="rtl" style="text-align:right; font-family:Arial,sans-serif;">
+                <h2>תגובה חדשה לשאלה שלך</h2>
+                <p><strong>שאלה:</strong> ${question.title}</p>
+                <p><strong>תגובה:</strong> ${answerText}</p>
+              </div>`
+          });
+        }
+      }
+
+      setAnswerInputs(prev => ({ ...prev, [index]: "" }));
+      setAnswerErrors(prev => ({ ...prev, [index]: "" }));
+      setAnswerSuccess(prev => ({ ...prev, [index]: "התגובה פורסמה בהצלחה!" }));
+      setTimeout(() => {
+        setAnswerSuccess(prev => ({ ...prev, [index]: "" }));
+      }, 2000);
+    } catch (error) {
+      console.error("שגיאה בהוספת תגובה:", error);
+    }
+  };
 
   const handleLikeToggle = async (questionId, likesArray) => {
-    const userId = auth.currentUser.uid;
+    const userId = auth.currentUser?.uid;
+    if (!userId) return;
+
     const questionRef = doc(db, "questions", questionId);
     const alreadyLiked = likesArray.includes(userId);
 
@@ -135,23 +181,27 @@ export default function Community({ currentUser }) {
   };
 
   const handleDeleteQuestion = async (questionId) => {
+    if (!currentUser?.uid) return;
     await deleteDoc(doc(db, "questions", questionId));
   };
 
   const handleDeleteAnswer = async (questionId, answerIndex) => {
-  const question = questions.find(q => q.id === questionId);
-  if (!question) return;
+    const question = questions.find(q => q.id === questionId);
+    if (!question) return;
 
-  const updatedAnswers = [...question.answers];
-  updatedAnswers.splice(answerIndex, 1); 
+    const updatedAnswers = [...question.answers];
+    updatedAnswers.splice(answerIndex, 1);
 
-  const questionRef = doc(db, "questions", questionId);
-  await updateDoc(questionRef, {
-    answers: updatedAnswers
-  });
-};
+    const questionRef = doc(db, "questions", questionId);
+    await updateDoc(questionRef, {
+      answers: updatedAnswers
+    });
+  };
 
-   return (
+  
+
+
+  return (
     <div className={styles.communityContainer}>
       <h1 className={styles.communityTitle}> קהילת למידה 👥</h1>
       <p className={styles.communitySubtitle}>שאל שאלות, הגב והשתתף בדיונים.</p>
@@ -182,15 +232,14 @@ export default function Community({ currentUser }) {
             <div className={styles.questionHeader}>
               <div className={styles.questionMeta}>
                 <span className={styles.questionLabel}>שאלה מאת:</span>
-                <span className={styles.questionAuthor}>{q.author}</span>
+                <span className={styles.questionAuthor}>
+                  {getDisplayName(q.authorId, q.author)}
+                </span>
               </div>
 
-              {q.author === currentUser && (
-                <button
-                  onClick={() => handleDeleteQuestion(q.id)}
-                  className={styles.deleteButton}
-                >
-                  מחק שאלה 
+              {(q.authorId === currentUser?.uid || currentUser?.isAdmin) && (
+                <button onClick={() => handleDeleteQuestion(q.id)} className={styles.deleteButton}>
+                  מחק שאלה
                 </button>
               )}
             </div>
@@ -220,13 +269,10 @@ export default function Community({ currentUser }) {
                     <li key={i} className={styles.answerItem}>
                       <div className={styles.answerHeader}>
                         <span className={styles.answerAuthor}>
-                          תגובה מאת: <strong>{a.author}</strong>
+                          תגובה מאת: <strong>{getDisplayName(a.authorId, a.author)}</strong>
                         </span> &nbsp;
-                        {a.author === currentUser && (
-                          <button
-                            onClick={() => handleDeleteAnswer(q.id, i)}
-                            className={styles.deleteButton}
-                          >
+                        {(a.authorId === currentUser?.uid || currentUser?.isAdmin) && (
+                          <button onClick={() => handleDeleteAnswer(q.id, i)} className={styles.deleteButton}>
                             מחק תגובה
                           </button>
                         )}
@@ -245,21 +291,17 @@ export default function Community({ currentUser }) {
               className={styles.answerTextarea}
             ></textarea>
             {answerErrors[index] && (
-            <p className={styles.errorMessage}>{answerErrors[index]}</p>
-                 )}  
-
+              <p className={styles.errorMessage}>{answerErrors[index]}</p>
+            )}
             {answerSuccess[index] && (
-            <p className={styles.successMessage}>{answerSuccess[index]}</p>
-                )}
-
+              <p className={styles.successMessage}>{answerSuccess[index]}</p>
+            )}
             <button onClick={() => handleAddAnswer(q.id, index)} className={styles.submitButton}>
-                הגב
+              הגב
             </button>
-            
           </div>
         ))}
       </div>
     </div>
   );
 }
-

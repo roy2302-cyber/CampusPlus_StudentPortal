@@ -98,7 +98,11 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  direction: rtl;
+  text-align: right;
+  flex-direction: row; 
 }
+
 
 .editDetails {
   margin-top: 1rem;
@@ -164,4 +168,13 @@
   color: green;
   font-weight: bold;
   margin-top: 0.5rem;
+}
+
+
+@media (max-width: 768px) {
+  .checkboxGroup label {
+    flex-direction: row-reverse;
+    text-align: right;
+    direction: rtl;
+  }
 }

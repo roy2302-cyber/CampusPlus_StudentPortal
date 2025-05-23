@@ -133,6 +133,12 @@
   text-align: center;
 }
 
+.successMessage {
+  color: green;
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+
 
 .inputLabel {
   display: block;

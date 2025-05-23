@@ -7,10 +7,10 @@ import {
   serverTimestamp,
   doc,
   updateDoc,
-  arrayUnion,
   onSnapshot,
   deleteDoc,
-  getDocs
+  getDocs,
+  getDoc
 } from 'firebase/firestore';
 import {
   ref as storageRef,
@@ -24,45 +24,59 @@ export default function Writing({ currentUser }) {
   const [text, setText] = useState("");
   const [title, setTitle] = useState("");
   const [file, setFile] = useState(null);
-  const [allUsers, setAllUsers] = useState([]);
   const [docStates, setDocStates] = useState({});
   const [editingStates, setEditingStates] = useState({});
-  const [lastDocId, setLastDocId] = useState(null);
+  const [sharableUsers, setSharableUsers] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState({});
   const uid = auth.currentUser?.uid;
 
   useEffect(() => {
-    const unsubDocs = onSnapshot(collection(db, "documents"), (snapshot) => {
-      const list = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        date: doc.data().createdAt?.toDate().toLocaleString('he-IL', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }) || "תאריך לא ידוע"
-      })).filter(doc =>
-        doc.author === currentUser || doc.sharedWith?.includes(uid)
-      );
-      setDocuments(list);
-    });
+    const fetchDocuments = async () => {
+      if (!uid) return;
+      const userRef = doc(db, "users", uid);
+      const userSnap = await getDoc(userRef);
+      const allowSharing = userSnap.exists() && userSnap.data().settings?.dataSharing === true;
 
-    return () => unsubDocs();
-  }, [currentUser, uid]);
+      const unsubDocs = onSnapshot(collection(db, "documents"), (snapshot) => {
+  const list = snapshot.docs.map(d => {
+    const docData = d.data(); // ✅ הגדרה נכונה
+    return {
+      id: d.id,
+      ...docData,
+      date: docData.createdAt?.toDate().toLocaleString('he-IL', {
+        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      }) || "תאריך לא ידוע"
+    };
+  })
+  
+  .filter(d =>
+    d.authorId === uid || (allowSharing && d.sharedWith?.includes(uid))
+  );
+  setDocuments(list);
+});
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const usersSnapshot = await getDocs(collection(db, "users"));
-      const usersList = usersSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setAllUsers(usersList);
+      return () => unsubDocs();
     };
 
-    fetchUsers();
-  }, []);
+    const fetchSharableUsers = async () => {
+      const usersRef = collection(db, "users");
+      const querySnapshot = await getDocs(usersRef);
+      const filtered = [];
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (data.uid !== currentUser.uid && data.settings?.dataSharing === true) {
+          filtered.push({
+            uid: data.uid,
+            displayName: data.displayName || data.email || "משתמש"
+          });
+        }
+      });
+      setSharableUsers(filtered);
+    };
+
+    fetchSharableUsers();
+    fetchDocuments();
+  }, [uid]);
 
   const updateDocState = (docId, field, value) => {
     setDocStates(prev => ({
@@ -74,32 +88,14 @@ export default function Writing({ currentUser }) {
     }));
   };
 
-  const handleShare = async (docId) => {
-    const selectedUserId = docStates[docId]?.selectedUserId;
-    if (!selectedUserId) return;
-    try {
-      const docRef = doc(db, "documents", docId);
-      await updateDoc(docRef, {
-        sharedWith: arrayUnion(selectedUserId)
-      });
-      const sharedUser = allUsers.find(u => u.id === selectedUserId);
-      updateDocState(docId, "sharedMessage", `המסמך שותף עם ${sharedUser?.displayName || "משתמש"} ✅`);
-      setTimeout(() => updateDocState(docId, "sharedMessage", ""), 3000);
-    } catch (err) {
-      console.error("שגיאה בשיתוף:", err);
-    }
-  };
-
   const handleSave = async () => {
     const trimmedTitle = title.trim();
     const trimmedText = text.trim();
-
     if (!trimmedTitle || (!trimmedText && !file)) {
       updateDocState("global", "errorMessage", "יש למלא נושא ולצרף תוכן כתוב או קובץ.");
       setTimeout(() => updateDocState("global", "errorMessage", ""), 3000);
       return;
     }
-
     try {
       let fileUrl = "";
       if (file) {
@@ -107,26 +103,19 @@ export default function Writing({ currentUser }) {
         await uploadBytes(fileStorageRef, file);
         fileUrl = await getDownloadURL(fileStorageRef);
       }
-
-      const newDoc = {
-        author: auth.currentUser.displayName || currentUser,
-        content: trimmedText,
+      await addDoc(collection(db, "documents"), {
+        author: currentUser.displayName,
+        authorId: currentUser.uid,
+        profileVisibility: currentUser.settings?.profileVisibility ?? false,
         topic: trimmedTitle,
+        content: trimmedText,
         createdAt: serverTimestamp(),
         fileUrl: fileUrl,
         sharedWith: []
-      };
-
-      const docRef = await addDoc(collection(db, "documents"), newDoc);
-      setLastDocId(docRef.id);
-
-      setText("");
-      setTitle("");
-      setFile(null);
+      });
+      setText(""); setTitle(""); setFile(null);
       updateDocState("global", "successMessage", "המסמך נשמר בהצלחה!");
-      setTimeout(() => {
-       updateDocState("global", "successMessage", "");
-        }, 2000);
+      setTimeout(() => updateDocState("global", "successMessage", ""), 2000);
     } catch (err) {
       console.error("שגיאה בשמירה:", err);
     }
@@ -134,35 +123,32 @@ export default function Writing({ currentUser }) {
 
   const handleDelete = async (docId) => {
     try {
-      const docSnapshot = documents.find((doc) => doc.id === docId);
-
-      if (docSnapshot?.fileUrl) {
-        const filePath = decodeURIComponent(
-          new URL(docSnapshot.fileUrl).pathname.split("/o/")[1].split("?")[0]
-        );
+      const targetDoc = documents.find((d) => d.id === docId);
+      if (targetDoc?.fileUrl) {
+        const filePath = decodeURIComponent(new URL(targetDoc.fileUrl).pathname.split("/o/")[1].split("?")[0]);
         const fileRef = storageRef(storage, filePath);
         await deleteObject(fileRef);
       }
-
       await deleteDoc(doc(db, "documents", docId));
-      alert("המסמך והקובץ נמחקו בהצלחה");
-      setLastDocId(null);
+      alert("המסמך נמחק בהצלחה!");
     } catch (error) {
       console.error("שגיאה במחיקת המסמך או הקובץ:", error);
     }
   };
 
-  const startEditing = (doc) => {
-    setEditingStates(prev => ({
-      ...prev,
-      [doc.id]: {
-        topic: doc.topic,
-        content: doc.content,
-        file: null,
-        oldFileUrl: doc.fileUrl || ""
-      }
-    }));
-  };
+  const startEditing = (documentItem) => {
+  setEditingStates(prev => ({
+    ...prev,
+    [documentItem.id]: {
+      topic: documentItem.topic,
+      content: documentItem.content,
+      file: null,
+      oldFileUrl: documentItem.fileUrl || ""
+    }
+  }));
+};
+
+
 
   const cancelEditing = (docId) => {
     setEditingStates(prev => {
@@ -173,236 +159,195 @@ export default function Writing({ currentUser }) {
   };
 
   const saveEdit = async (docId) => {
-  const edited = editingStates[docId];
-  const errors = {};
-
-  if (!edited.topic?.trim()) errors.topic = 'נא להזין נושא';
-  if (!edited.content?.trim()) errors.content = 'נא להזין תוכן';
-
-  if (Object.keys(errors).length > 0) {
-    updateDocState(docId, 'editErrors', errors);
-
-    // ניקוי אוטומטי אחרי 2 שניות
-    setTimeout(() => {
-      updateDocState(docId, 'editErrors', {});
-    }, 2000);
-
-    return;
-  }
-
-  try {
-    let newFileUrl = edited.oldFileUrl;
-
-    if (edited.file) {
-      if (edited.oldFileUrl) {
-        const filePath = decodeURIComponent(
-          new URL(edited.oldFileUrl).pathname.split("/o/")[1].split("?")[0]
-        );
-        await deleteObject(storageRef(storage, filePath));
-      }
-
-      const newFileRef = storageRef(storage, `documents/${Date.now()}_${edited.file.name}`);
-      await uploadBytes(newFileRef, edited.file);
-      newFileUrl = await getDownloadURL(newFileRef);
+    const edited = editingStates[docId];
+    const errors = {};
+    if (!edited.topic?.trim()) errors.topic = 'נא להזין נושא';
+    if (!edited.content?.trim()) errors.content = 'נא להזין תוכן';
+    if (Object.keys(errors).length > 0) {
+      updateDocState(docId, 'editErrors', errors);
+      setTimeout(() => updateDocState(docId, 'editErrors', {}), 2000);
+      return;
     }
-
-    await updateDoc(doc(db, "documents", docId), {
-      topic: edited.topic,
-      content: edited.content,
-      fileUrl: newFileUrl
-    });
-
-    cancelEditing(docId);
-    updateDocState(docId, "sharedMessage", "המסמך עודכן בהצלחה!");
-    setTimeout(() => updateDocState(docId, "sharedMessage", ""), 3000);
-  } catch (err) {
-    console.error("שגיאה בעריכת המסמך:", err);
-  }
-};
-
-
+    try {
+      let newFileUrl = edited.oldFileUrl;
+      if (edited.file) {
+        if (edited.oldFileUrl) {
+          const filePath = decodeURIComponent(new URL(edited.oldFileUrl).pathname.split("/o/")[1].split("?")[0]);
+          await deleteObject(storageRef(storage, filePath));
+        }
+        const newFileRef = storageRef(storage, `documents/${Date.now()}_${edited.file.name}`);
+        await uploadBytes(newFileRef, edited.file);
+        newFileUrl = await getDownloadURL(newFileRef);
+      }
+      await updateDoc(doc(db, "documents", docId), {
+        topic: edited.topic,
+        content: edited.content,
+        fileUrl: newFileUrl
+      });
+      cancelEditing(docId);
+      updateDocState(docId, "sharedMessage", "המסמך עודכן בהצלחה!");
+      setTimeout(() => updateDocState(docId, "sharedMessage", ""), 3000);
+    } catch (err) {
+      console.error("שגיאה בעריכת המסמך:", err);
+    }
+  };
 
   return (
-    <div className={styles.writingContainer}>
-      <div className={styles.headerSection}>
-        <h1 className={styles.pageTitleBlue}>כתיבה אקדמית 📝</h1>
-        <p className={styles.pageSubtitle}>צור מסמך חדש, שמור טיוטות ושתף עם אחרים.</p>
-      </div>
+  <div className={styles.writingContainer}>
+    <div className={styles.headerSection}>
+      <h1 className={styles.pageTitleBlue}>כתיבה אקדמית 📝</h1>
+      <p className={styles.pageSubtitle}>צור מסמך חדש, שמור טיוטות ושתף עם אחרים.</p>
+    </div>
 
-      <input
-        type="text"
-        placeholder="נושא"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className={styles.topicInput}
-      />
+    <input type="text" placeholder="נושא" value={title} onChange={(e) => setTitle(e.target.value)} className={styles.topicInput} />
+    <textarea className={styles.textArea} placeholder="התחל לכתוב כאן..." value={text} onChange={(e) => setText(e.target.value)}></textarea>
+    <label className={styles.fileUploadLabel}>
+      העלה קובץ 
+      <input type="file" onChange={(e) => setFile(e.target.files[0])} className={styles.fileInput} />
+    </label>
+    <span className={styles.fileName}>{file?.name || "לא נבחר קובץ"}</span>
 
-      <textarea
-        className={styles.textArea}
-        placeholder="התחל לכתוב כאן..."
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      ></textarea>
+    {docStates["global"]?.errorMessage && <div className={styles.errorMessage}>{docStates["global"].errorMessage}</div>}
+    <div className={styles.buttonWrapper}>
+      {docStates["global"]?.successMessage && <div className={styles.successMessage}>{docStates["global"].successMessage}</div>}
+      <button className={styles.saveButton} onClick={handleSave}>שמור מסמך</button>
+    </div>
 
-      <input
-        type="file"
-        onChange={(e) => setFile(e.target.files[0])}
-        className={styles.fileInput}
-      />
-
-      {docStates["global"]?.errorMessage && (
-        <div className={styles.errorMessage}>
-          {docStates["global"].errorMessage}
-        </div>
-      )}
-
-      <div className={styles.buttonWrapper}>
-        {docStates["global"]?.successMessage && (
-          <div className={styles.successMessage}>
-            {docStates["global"].successMessage}
-          </div>
-        )}
-        <button className={styles.saveButton} onClick={handleSave}>
-          שמור מסמך
-        </button>
-  
-      </div>
-
-      <div className={styles.savedDocuments}>
-        {documents.map((doc) => (
-          <div key={doc.id} className={styles.documentItem}>
+    <div className={styles.savedDocuments}>
+      {documents.map((d) => (
+        <div key={d.id} className={styles.documentItem}>
+          {d.authorId === uid ? (
             <strong className={styles.documentMeta}>
-              טיוטה נשמרה ב-{doc.date} | נושא: {doc.topic}
+              טיוטה נשמרה בתאריך- {d.date} | נושא: {d.topic}
             </strong>
-            <p className={styles.documentContent}>{doc.content}</p>
-            {doc.fileUrl && (
-              <a
-                href={doc.fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.viewFileLink}
-              >
-                צפייה בקובץ 📄
-              </a>
-            )}
-
-            {auth.currentUser.displayName === doc.author && (
-              <div className={styles.inlineButtons}>
-                <select
-                  className={styles.selectUser}
-                  value={docStates[doc.id]?.selectedUserId || ""}
-                  onChange={(e) =>
-                    updateDocState(doc.id, "selectedUserId", e.target.value)
-                  }
-                >
-                  <option value="">בחר משתמש לשיתוף</option>
-                  {allUsers
-                    .filter((u) => u.id !== auth.currentUser.uid)
-                    .map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.displayName}
-                      </option>
-                    ))}
-                </select>
-
-                <button
-                  className={styles.shareBtn}
-                  onClick={() => handleShare(doc.id)}
-                >
-                  שתף מסמך 
-                </button>
-                
-                <button onClick={() => startEditing(doc)} className={styles.editBtn}>ערוך מסמך </button>
-                <button onClick={() => handleDelete(doc.id)} className={styles.deleteBtn}>מחק מסמך </button>
+          ) : (
+            <>
+              <strong className={styles.documentMeta}>
+                מסמך משותף מ- {
+                  (d.profileVisibility && !currentUser.isAdmin && d.authorId !== uid)
+                    ? "משתמש אנונימי"
+                    : (d.author || "משתמש")
+                } בתאריך {d.date}
+              </strong>
+              <div className={styles.sharedTopic}>
+                נושא: <strong>{d.topic}</strong>
               </div>
+            </>
+          )}
+
+          <p className={styles.documentContent}>{d.content}</p>
+          {d.fileUrl && (
+            <a href={d.fileUrl} target="_blank" rel="noopener noreferrer" className={styles.viewFileLink}>
+              צפייה בקובץ 📄
+            </a>
+          )}
+
+          <div className={styles.inlineButtons}>
+            {(auth.currentUser.uid === d.authorId || currentUser.isAdmin) && (
+              <button onClick={() => startEditing(d)} className={styles.editBtn}>ערוך מסמך</button>
             )}
-
-         {editingStates[doc.id] && (
-  <div className={styles.editForm}>
-    <label className={styles.editLabel}>נושא:</label>
-<input
-  type="text"
-  value={editingStates[doc.id]?.topic || ''}
-  onChange={(e) =>
-    setEditingStates(prev => ({
-      ...prev,
-      [doc.id]: {
-        ...prev[doc.id],
-        topic: e.target.value
-      }
-    }))
-  }
-  className={styles.editInput}
-/>
-{docStates[doc.id]?.editErrors?.topic && (
-  <div className={styles.errorMessage}>
-    {docStates[doc.id].editErrors.topic}
-  </div>
-)}
-
-<label className={styles.editLabel}>תוכן:</label>
-<textarea
-  value={editingStates[doc.id]?.content || ''}
-  onChange={(e) =>
-    setEditingStates(prev => ({
-      ...prev,
-      [doc.id]: {
-        ...prev[doc.id],
-        content: e.target.value
-      }
-    }))
-  }
-  className={styles.editTextarea}
-/>
-{docStates[doc.id]?.editErrors?.content && (
-  <div className={styles.errorMessage}>
-    {docStates[doc.id].editErrors.content}
-  </div>
-)}
-
-
-    <label className={styles.editLabel}>קובץ חדש:</label>
-    <input
-      type="file"
-      onChange={(e) =>
-        setEditingStates(prev => ({
-          ...prev,
-          [doc.id]: {
-            ...prev[doc.id],
-            file: e.target.files[0]
-          }
-        }))
-      }
-      className={styles.fileInput}
-    />
-
-    <div className={styles.editButtons}>
-      <button
-        onClick={() => saveEdit(doc.id)}
-        className={styles.saveEditBtn}
-      >
-        שמור שינויים 
-      </button>
-      <button
-        onClick={() => cancelEditing(doc.id)}
-        className={styles.cancelEditBtn}
-      >
-        בטל עריכה 
-      </button>
-    </div>
-  </div>
-)}
-
-           
-
-            {docStates[doc.id]?.sharedMessage && (
-              <div className={styles.successMessage}>
-                {docStates[doc.id].sharedMessage}
-              </div>
+            {(d.sharedWith?.includes(uid) || auth.currentUser.uid === d.authorId || currentUser.isAdmin) && (
+              <button onClick={() => handleDelete(d.id)} className={styles.deleteBtn}>מחק מסמך</button>
             )}
           </div>
-        ))}
-      </div>
+
+          <div className={styles.shareRow}>
+  {docStates[d.id]?.shareError && (
+    <div className={styles.errorMessage}>{docStates[d.id].shareError}</div>
+  )}
+
+  <button
+    className={styles.shareButton}
+    onClick={async () => {
+      const selectedUid = selectedUsers[d.id];
+      if (!selectedUid) {
+        updateDocState(d.id, "shareError", "יש לבחור משתמש לשיתוף");
+        setTimeout(() => updateDocState(d.id, "shareError", ""), 3000);
+        return;
+      }
+      try {
+        await updateDoc(doc(db, "documents", d.id), {
+          sharedWith: [...(d.sharedWith || []), selectedUid]
+        });
+        updateDocState(d.id, "sharedMessage", "המסמך שותף בהצלחה!");
+        setSelectedUsers((prev) => ({ ...prev, [d.id]: "" }));
+        setTimeout(() => updateDocState(d.id, "sharedMessage", ""), 2000);
+      } catch (err) {
+        console.error("שגיאה בשיתוף:", err);
+      }
+    }}
+  >
+    שתף
+  </button>
+
+  <select
+    onChange={(e) => setSelectedUsers((prev) => ({
+      ...prev,
+      [d.id]: e.target.value
+    }))}
+    value={selectedUsers[d.id] || ""}
+    className={styles.selectInput}
+  >
+    <option value="" disabled>בחר משתמש לשיתוף</option>
+    {sharableUsers.map((user) => (
+      <option key={user.uid} value={user.uid}>
+        {user.displayName}
+      </option>
+    ))}
+  </select>
+</div>
+
+
+          {editingStates[d.id] && (
+            <div className={styles.editForm}>
+              <label className={styles.editLabel}>נושא:</label>
+              <input
+                type="text"
+                value={editingStates[d.id]?.topic || ''}
+                onChange={(e) => setEditingStates(prev => ({ ...prev, [d.id]: { ...prev[d.id], topic: e.target.value } }))}
+                className={styles.editInput}
+              />
+              {docStates[d.id]?.editErrors?.topic && <div className={styles.errorMessage}>{docStates[d.id].editErrors.topic}</div>}
+
+              <label className={styles.editLabel}>תוכן:</label>
+              <textarea
+                value={editingStates[d.id]?.content || ''}
+                onChange={(e) => setEditingStates(prev => ({ ...prev, [d.id]: { ...prev[d.id], content: e.target.value } }))}
+                className={styles.editTextarea}
+              />
+              {docStates[d.id]?.editErrors?.content && <div className={styles.errorMessage}>{docStates[d.id].editErrors.content}</div>}
+
+              <label className={styles.fileUploadLabel}>
+                 העלה קובץ חדש
+                <input
+                  type="file"
+                  onChange={(e) => setEditingStates(prev => ({
+                    ...prev,
+                    [d.id]: {
+                      ...prev[d.id],
+                      file: e.target.files[0]
+                    }
+                  }))}
+                  className={styles.fileInput}
+                />
+              </label>
+              <span className={styles.fileName}>
+                {editingStates[d.id]?.file?.name || "לא נבחר קובץ"}
+              </span>
+
+              <div className={styles.editButtons}>
+                <button onClick={() => saveEdit(d.id)} className={styles.saveEditBtn}>שמור שינויים</button>
+                <button onClick={() => cancelEditing(d.id)} className={styles.cancelEditBtn}>בטל עריכה</button>
+              </div>
+            </div>
+          )}
+
+          {docStates[d.id]?.sharedMessage && (
+            <div className={styles.successMessage}>{docStates[d.id].sharedMessage}</div>
+          )}
+        </div>
+      ))}
     </div>
-  );
+  </div>
+);
 }

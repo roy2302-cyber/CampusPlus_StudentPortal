@@ -36,3 +36,39 @@ body {
   font-size: 0.875rem;
   color: #9ca3af;
 }
+
+@media (max-width: 600px) {
+  .app-container {
+    padding: 1rem;
+  }
+
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .logo {
+    font-size: 1.1rem;
+    text-align: center;
+    width: 100%;
+  }
+
+  .app-footer {
+    font-size: 0.75rem;
+    padding: 0 10px;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    width: 100%;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+}
+
+
+
+

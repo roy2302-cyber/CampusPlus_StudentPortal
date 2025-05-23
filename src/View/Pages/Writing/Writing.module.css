@@ -59,6 +59,7 @@
   border: none;
   border-radius: 8px;
   font-size: 1rem;
+  font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s;
 }
@@ -314,3 +315,81 @@
   margin-top: 12px;
   text-align: right;
 }
+
+.selectInput {
+  padding: 10px;
+  font-size: 0.95rem;
+  font-family: 'Heebo', sans-serif;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: #f9fafb;
+  width: auto;
+  min-width: 200px;
+  direction: rtl;
+  color: #1e293b;
+  transition: border-color 0.2s ease;
+}
+
+.selectInput:focus {
+  border-color: #2563eb;
+  outline: none;
+}
+
+.shareButton {
+  background-color: #2563eb;
+  color: white;
+  font-weight: bold;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.shareButton:hover {
+  background-color: #1e40af;
+}
+
+
+.fileUploadLabel {
+  display: inline-block;
+  background-color: #2563eb;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  direction: rtl;
+  margin-bottom: 10px;
+}
+
+.fileUploadLabel:hover {
+  background-color: #1e40af;
+}
+
+.fileInput {
+  display: none;
+}
+
+.fileName {
+  margin-right: 10px;
+  font-size: 0.9rem;
+  color: #333;
+  direction: rtl;
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+
+.shareRow {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+

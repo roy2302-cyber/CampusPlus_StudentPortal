@@ -193,7 +193,7 @@
 
 .deleteBtn {
   display: inline-block;
-  background-color: #dc2626; /* אדום */
+  background-color: #dc2626; 
   color: white;
   text-decoration: none;
   padding: 0.5rem 1rem;
@@ -214,4 +214,42 @@
   gap: 1rem;
   flex-wrap: wrap;
   margin-top: 0.5rem;
+}
+
+.fileUploadWrapper input[type="file"] {
+  position: absolute;
+  font-size: 100px;
+  right: 0;
+  top: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.fileUploadWrapper {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  background-color: #2563eb;
+  color: white;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  align-self: flex-start; 
+}
+
+
+.fileUploadWrapper:hover {
+  background-color: #1d4ed8;
+}
+
+.hiddenFileInput {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 100px;
+  opacity: 0;
+  cursor: pointer;
 }
