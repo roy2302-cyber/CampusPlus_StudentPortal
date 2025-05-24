@@ -14,7 +14,7 @@
     ]
   },
   "storage": {
-    "rules": "firebase storage:bucket"
+    "rules": "storage.rules"
   },
   "functions": [
     {
