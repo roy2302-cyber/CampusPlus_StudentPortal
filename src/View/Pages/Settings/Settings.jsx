@@ -29,6 +29,7 @@ export default function Settings({ currentUser }) {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const sendEmailNotification = httpsCallable(functions, 'sendEmailNotification');
+  const sendSmsNotification = httpsCallable(functions, 'sendSmsNotification');
   const uid = auth.currentUser?.uid;
 
   useEffect(() => {
@@ -94,11 +95,11 @@ export default function Settings({ currentUser }) {
         await updatePassword(auth.currentUser, newPassword);
       }
 
-      await updateDoc(doc(db, 'users', uid), {
+      await setDoc(doc(db, 'users', uid), {
         displayName: userDetails.fullName,
         email: userDetails.email,
         phone: userDetails.phone,
-      });
+      }, { merge: true });
 
       setSuccessMessage('הפרטים עודכנו בהצלחה!');
       setTimeout(() => setSuccessMessage(''), 2000);
@@ -123,11 +124,9 @@ export default function Settings({ currentUser }) {
       }, 2000);
 
       if (key === 'emailNotifications') {
-        const rawEmail = userDetails.email?.trim();
-        const isValidEmail = rawEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail);
-
-        if (!isValidEmail) {
-          console.warn("לא נשלח מייל - אימייל לא תקין:", rawEmail);
+        const rawEmail = (userDetails.email || '').trim();
+        if (!rawEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail)) {
+          console.warn('❌ אימייל לא תקין או ריק:', rawEmail);
           return;
         }
 
@@ -149,8 +148,9 @@ export default function Settings({ currentUser }) {
       }
 
       if (key === 'smsNotifications') {
-        const rawPhone = userDetails.phone?.trim();
-        const isValidPhone = rawPhone && /^(\+972|0)(5\d{8})$/.test(rawPhone);
+        const rawPhone = (userDetails.phone || '').trim();
+        const isValidPhone = /^(\+972|0)(5\d{8})$/.test(rawPhone);
+
 
         if (!isValidPhone) {
           console.warn("לא נשלח SMS - מספר לא תקין:", rawPhone);
@@ -158,8 +158,7 @@ export default function Settings({ currentUser }) {
         }
 
         try {
-          const sendSms = httpsCallable(functions, 'sendSmsNotification');
-          const result = await sendSms({
+          const result = await sendSmsNotification({
             to: rawPhone,
             message: 'ההגדרה להתראות ב-SMS עודכנה בהצלחה',
           });

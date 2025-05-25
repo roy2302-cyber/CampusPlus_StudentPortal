@@ -8,59 +8,71 @@ import corsLib from 'cors';
 import twilio from 'twilio';
 import { defineSecret } from "firebase-functions/params";
 
+const SENDGRID_API_KEY = defineSecret("SENDGRID_API_KEY");
 const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
 const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
 const TWILIO_PHONE_NUMBER = defineSecret("TWILIO_PHONE_NUMBER");
-
-const getTwilioClient = () => {
-  return twilio(
-    TWILIO_ACCOUNT_SID.value(),
-    TWILIO_AUTH_TOKEN.value()
-  );
-};
 
 const cors = corsLib({ origin: true });
 admin.initializeApp();
 const db = admin.firestore();
 
+
 setGlobalOptions({
   region: "us-central1",
   memory: "256MiB",
   timeoutSeconds: 60,
-  secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER],
+  secrets: [SENDGRID_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER],
 });
 
+
+
 export const sendEmailNotification = onCall(async (request) => {
-  const { to, subject, text, html } = request.data;
+  const { to, subject, html } = request.data;
+
   if (!to || typeof to !== "string") {
     throw new Error("אימייל לא תקין");
   }
 
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  const apiKey = SENDGRID_API_KEY.value();
+
+  if (!apiKey || apiKey.length < 10) {
+    logger.error("❌ API KEY לא הוגדר או קצר מדי");
+    throw new Error("שליחת אימייל נכשלה: מפתח לא תקין");
+  }
+
+  sgMail.setApiKey(apiKey);
 
   const msg = {
     to,
-    from: "royye5869@gmail.com",
+    from: "royye5869@gmail.com", 
     subject,
     html,
   };
 
   try {
-    await sgMail.send(msg);
+    const res = await sgMail.send(msg);
+    logger.info("📤 מייל נשלח בהצלחה", res);
     return { success: true };
   } catch (error) {
     logger.error("שגיאה בשליחת מייל:", error);
+    if (error?.response?.body?.errors) {
+      logger.error("🔍 פרטי שגיאה:", JSON.stringify(error.response.body.errors));
+    }
     throw new Error("שליחת אימייל נכשלה");
   }
 });
+
 
 export const sendSmsNotification = onCall(async (request) => {
   const { to, message } = request.data;
   if (!to || !message) {
     throw new Error("מספר או הודעה חסרים");
   }
-
-  const client = getTwilioClient();
+  const client = twilio(
+    TWILIO_ACCOUNT_SID.value(),
+    TWILIO_AUTH_TOKEN.value()
+  );
   const from = TWILIO_PHONE_NUMBER.value();
 
   try {
@@ -74,26 +86,22 @@ export const sendSmsNotification = onCall(async (request) => {
 
 export const deleteUserAccount = onRequest((req, res) => {
   cors(req, res, async () => {
-    if (req.method !== "POST") {
-      return res.status(405).send("Method Not Allowed");
-    }
-
+    if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
     const { uid } = req.body;
     if (!uid) return res.status(400).send("חסר UID");
-
     try {
       await admin.auth().deleteUser(uid);
       res.status(200).json({ success: true });
     } catch (err) {
-      logger.error("שגיאה במחיקה:", err);
+      logger.error("שגיאה במחיקת משתמש:", err);
       res.status(500).json({ error: "מחיקת המשתמש נכשלה" });
     }
   });
 });
 
+
+
 export const notifyOnNewQuestion = onDocumentCreated("questions/{questionId}", async (event) => {
-  const client = getTwilioClient();
-  const from = TWILIO_PHONE_NUMBER.value();
   const data = event.data?.data();
   if (!data) return;
 
@@ -102,17 +110,23 @@ export const notifyOnNewQuestion = onDocumentCreated("questions/{questionId}", a
 
   const emailList = [];
   const smsList = [];
+
   usersSnap.forEach(doc => {
     const user = doc.data();
     if (user?.settings?.emailNotifications && user?.email && user.uid !== authorId) {
-      emailList.push({ email: user.email, displayName: user.displayName || "משתמש" });
+      emailList.push(user.email);
     }
     if (user?.settings?.smsNotifications && user?.phone && user.uid !== authorId) {
-      smsList.push({ phone: user.phone });
+      smsList.push(user.phone);
     }
   });
 
   const displayName = profileVisibility === false ? "משתמש אנונימי" : (author || "משתמש");
+
+  sgMail.setApiKey(SENDGRID_API_KEY.value());
+  const client = twilio(TWILIO_ACCOUNT_SID.value(), TWILIO_AUTH_TOKEN.value());
+  const from = TWILIO_PHONE_NUMBER.value();
+
   const html = `
     <div dir="rtl" style="text-align:right; font-family:Arial, sans-serif;">
       <h3>שאלה חדשה פורסמה בקהילת הלמידה</h3>
@@ -123,11 +137,10 @@ export const notifyOnNewQuestion = onDocumentCreated("questions/{questionId}", a
     </div>
   `;
 
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-  for (const user of emailList) {
+  for (const email of emailList) {
     try {
       await sgMail.send({
-        to: user.email,
+        to: email,
         from: "royye5869@gmail.com",
         subject: "שאלה חדשה פורסמה בקמפוס+",
         html,
@@ -138,9 +151,9 @@ export const notifyOnNewQuestion = onDocumentCreated("questions/{questionId}", a
   }
 
   const smsText = `שאלה חדשה: ${title}\nנשאל ע"י: ${displayName}`;
-  for (const user of smsList) {
+  for (const phone of smsList) {
     try {
-      await client.messages.create({ body: smsText, from, to: user.phone });
+      await client.messages.create({ body: smsText, from, to: phone });
     } catch (err) {
       logger.error("שגיאה בשליחת SMS לשאלה חדשה:", err.message);
     }
@@ -148,8 +161,6 @@ export const notifyOnNewQuestion = onDocumentCreated("questions/{questionId}", a
 });
 
 export const notifyOnSharedDocument = onDocumentUpdated("documents/{docId}", async (event) => {
-  const client = getTwilioClient();
-  const from = TWILIO_PHONE_NUMBER.value();
   const before = event.data?.before.data();
   const after = event.data?.after.data();
   if (!before || !after) return;
@@ -157,9 +168,12 @@ export const notifyOnSharedDocument = onDocumentUpdated("documents/{docId}", asy
   const addedUsers = (after.sharedWith || []).filter(uid => !(before.sharedWith || []).includes(uid));
   if (addedUsers.length === 0) return;
 
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const docTitle = after.topic || "ללא נושא";
   const senderName = after.author || "משתמש";
+
+  sgMail.setApiKey(SENDGRID_API_KEY.value());
+  const client = twilio(TWILIO_ACCOUNT_SID.value(), TWILIO_AUTH_TOKEN.value());
+  const from = TWILIO_PHONE_NUMBER.value();
 
   for (const uid of addedUsers) {
     const userSnap = await db.collection("users").doc(uid).get();
@@ -175,29 +189,31 @@ export const notifyOnSharedDocument = onDocumentUpdated("documents/{docId}", asy
       </div>
     `;
 
-    try {
-      if (user.settings?.emailNotifications && user.email) {
+    if (user.settings?.emailNotifications && user.email) {
+      try {
         await sgMail.send({
           to: user.email,
           from: "royye5869@gmail.com",
           subject: "מסמך אקדמי חדש שותף איתך בקמפוס+",
           html,
         });
+      } catch (err) {
+        logger.error("שגיאה בשליחת מייל למסמך משותף:", err.message);
       }
+    }
 
-      if (user.settings?.smsNotifications && user.phone) {
-        const smsText = `מסמך חדש בנושא "${docTitle}" שותף איתך ע"י ${senderName}`;
+    if (user.settings?.smsNotifications && user.phone) {
+      const smsText = `מסמך חדש בנושא "${docTitle}" שותף איתך ע"י ${senderName}`;
+      try {
         await client.messages.create({ body: smsText, from, to: user.phone });
+      } catch (err) {
+        logger.error("שגיאה בשליחת SMS למסמך משותף:", err.message);
       }
-    } catch (err) {
-      logger.error("שגיאה בשליחת התראה על מסמך משותף:", err.message);
     }
   }
 });
 
 export const notifyOnQuestionReply = onDocumentUpdated("questions/{questionId}", async (event) => {
-  const client = getTwilioClient();
-  const from = TWILIO_PHONE_NUMBER.value();
   const before = event.data?.before.data();
   const after = event.data?.after.data();
   if (!before || !after) return;
@@ -222,7 +238,10 @@ export const notifyOnQuestionReply = onDocumentUpdated("questions/{questionId}",
     </div>
   `;
 
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  sgMail.setApiKey(SENDGRID_API_KEY.value());
+  const client = twilio(TWILIO_ACCOUNT_SID.value(), TWILIO_AUTH_TOKEN.value());
+  const from = TWILIO_PHONE_NUMBER.value();
+
   try {
     await sgMail.send({
       to: user.email,
@@ -245,42 +264,40 @@ export const notifyOnQuestionReply = onDocumentUpdated("questions/{questionId}",
 });
 
 export const notifyOnNewSummary = onDocumentCreated("documents/{docId}", async (event) => {
-  const client = getTwilioClient();
-  const from = TWILIO_PHONE_NUMBER.value();
   const data = event.data?.data();
   if (!data) return;
 
   const { topic, author, authorId } = data;
   const usersSnap = await db.collection("users").get();
-  const emailList = [];
 
-  usersSnap.forEach(doc => {
+  sgMail.setApiKey(SENDGRID_API_KEY.value());
+  const client = twilio(TWILIO_ACCOUNT_SID.value(), TWILIO_AUTH_TOKEN.value());
+  const from = TWILIO_PHONE_NUMBER.value();
+
+  for (const doc of usersSnap.docs) {
     const user = doc.data();
-    if (user?.settings?.emailNotifications && user?.email && user.uid !== authorId) {
-      emailList.push({ email: user.email, phone: user.phone, settings: user.settings });
-    }
-  });
+    if (!user || user.uid === authorId) continue;
 
-  const html = `
-    <div dir="rtl" style="text-align:right; font-family:Arial, sans-serif;">
-      <h3>סיכום חדש הועלה</h3>
-      <p><strong>נושא:</strong> ${topic}</p>
-      <p><strong>מאת:</strong> ${author || "משתמש"}</p>
-      <p><a href="https://campusplus.com/summaries">לצפייה בסיכומים</a></p>
-    </div>
-  `;
+    const html = `
+      <div dir="rtl" style="text-align:right; font-family:Arial, sans-serif;">
+        <h3>סיכום חדש הועלה</h3>
+        <p><strong>נושא:</strong> ${topic}</p>
+        <p><strong>מאת:</strong> ${author || "משתמש"}</p>
+        <p><a href="https://campusplus.com/summaries">לצפייה בסיכומים</a></p>
+      </div>
+    `;
 
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-  for (const user of emailList) {
-    try {
-      await sgMail.send({
-        to: user.email,
-        from: "royye5869@gmail.com",
-        subject: "סיכום חדש הועלה בקמפוס+",
-        html,
-      });
-    } catch (err) {
-      logger.error("שגיאה בשליחת מייל על סיכום חדש:", err.message);
+    if (user.settings?.emailNotifications && user.email) {
+      try {
+        await sgMail.send({
+          to: user.email,
+          from: "royye5869@gmail.com",
+          subject: "סיכום חדש הועלה בקמפוס+",
+          html,
+        });
+      } catch (err) {
+        logger.error("שגיאה בשליחת מייל על סיכום:", err.message);
+      }
     }
 
     if (user.settings?.smsNotifications && user.phone) {
@@ -288,7 +305,7 @@ export const notifyOnNewSummary = onDocumentCreated("documents/{docId}", async (
       try {
         await client.messages.create({ body: smsText, from, to: user.phone });
       } catch (err) {
-        logger.error("שגיאה בשליחת SMS על סיכום חדש:", err.message);
+        logger.error("שגיאה בשליחת SMS על סיכום:", err.message);
       }
     }
   }

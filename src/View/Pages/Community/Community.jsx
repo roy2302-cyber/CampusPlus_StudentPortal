@@ -101,16 +101,26 @@ export default function Community({ currentUser }) {
       answers: []
     });
 
-    await sendEmailNotification({
-      to: "royye5869@gmail.com",
-      subject: "שאלה חדשה פורסמה בקהילת הלמידה",
-      html: `
-        <div dir="rtl" style="text-align:right; font-family:Arial,sans-serif;">
-          <h2>שאלה חדשה פורסמה בקמפוס+</h2>
-          <p><strong>נושא:</strong> ${title}</p>
-          <p><strong>תוכן:</strong> ${content}</p>
-        </div>`
-    });
+
+    setSuccessMessage("השאלה פורסמה בהצלחה!");
+    setTimeout(() => setSuccessMessage(""), 2000);
+
+
+   try {
+  const result = await sendEmailNotification({
+    to: "royye5869@gmail.com",
+    subject: "שאלה חדשה פורסמה בקהילת הלמידה",
+    html: `
+      <div dir="rtl" style="text-align:right; font-family:Arial,sans-serif;">
+        <h2>שאלה חדשה פורסמה בקמפוס+</h2>
+        <p><strong>נושא:</strong> ${title}</p>
+        <p><strong>תוכן:</strong> ${content}</p>
+      </div>`
+  });
+  console.log("תוצאה מהמייל:", result.data);
+} catch (error) {
+  console.error("שליחת מייל נכשלה:", error);
+}
 
     setTitle("");
     setContent("");
@@ -143,19 +153,26 @@ export default function Community({ currentUser }) {
         const authorDoc = await getDoc(doc(db, "users", question.authorId));
         const authorEmail = authorDoc.exists() ? authorDoc.data().email : null;
 
-        if (authorEmail) {
-          await sendEmailNotification({
-            to: authorEmail,
-            subject: "תגובה חדשה לשאלה שלך בקמפוס+",
-            html: `
-              <div dir="rtl" style="text-align:right; font-family:Arial,sans-serif;">
-                <h2>תגובה חדשה לשאלה שלך</h2>
-                <p><strong>שאלה:</strong> ${question.title}</p>
-                <p><strong>תגובה:</strong> ${answerText}</p>
-              </div>`
-          });
-        }
-      }
+  if (authorEmail) {
+  try {
+    const result = await sendEmailNotification({
+      to: authorEmail,
+      subject: "תגובה חדשה לשאלה שלך בקמפוס+",
+      html: `
+        <div dir="rtl" style="text-align:right; font-family:Arial,sans-serif;">
+          <h2>תגובה חדשה לשאלה שלך</h2>
+          <p><strong>שאלה:</strong> ${question.title}</p>
+          <p><strong>תגובה:</strong> ${answerText}</p>
+        </div>`
+    });
+    console.log("נשלח מייל תגובה:", result.data);
+  } catch (error) {
+    console.error("שליחת מייל נכשלה:", error);
+  }
+}
+
+
+}
 
       setAnswerInputs(prev => ({ ...prev, [index]: "" }));
       setAnswerErrors(prev => ({ ...prev, [index]: "" }));
