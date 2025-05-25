@@ -253,7 +253,7 @@ export default function Community({ currentUser }) {
                   {getDisplayName(q.authorId, q.author)}
                 </span>
               </div>
-
+              
               {(q.authorId === currentUser?.uid || currentUser?.isAdmin) && (
                 <button onClick={() => handleDeleteQuestion(q.id)} className={styles.deleteButton}>
                   מחק שאלה
@@ -261,22 +261,24 @@ export default function Community({ currentUser }) {
               )}
             </div>
 
-            <div className={styles.questionTitleRow}>
-              <div style={{ flexGrow: 1 }}>
-                <span className={styles.questionLabelTitle}>נושא השאלה:</span>
-                <h2 className={styles.questionHeading}>{q.title}</h2>
+           <div className={styles.questionTitleRow}>
+  <div style={{ flexGrow: 1 }}>
+    <span className={styles.questionLabelTitle}>נושא השאלה:</span>
+    <h2 className={styles.questionHeading}>{q.title}</h2>
 
-                <span className={styles.questionLabelContent}>תוכן השאלה:</span>
-                <p className={styles.questionContent}>{q.content}</p>
-              </div>
+    <span className={styles.questionLabelContent}>תוכן השאלה:</span>
+    <p className={styles.questionContent}>{q.content}</p>
+  </div>
 
-              <button
-                onClick={() => handleLikeToggle(q.id, q.likes)}
-                className={styles.likeButton}
-              >
-                👍 {q.likes?.length || 0}
-              </button>
-            </div>
+  <div className={styles.actionsRow}>
+    <button
+      onClick={() => handleLikeToggle(q.id, q.likes)}
+      className={styles.likeButton}
+    >
+      👍 {q.likes?.length || 0}
+    </button>
+  </div>
+</div>
 
             {Array.isArray(q.answers) && q.answers.length > 0 && (
               <div className={styles.answersSection}>
@@ -284,16 +286,17 @@ export default function Community({ currentUser }) {
                 <ul className={styles.answersList}>
                   {q.answers.map((a, i) => (
                     <li key={i} className={styles.answerItem}>
-                      <div className={styles.answerHeader}>
-                        <span className={styles.answerAuthor}>
-                          תגובה מאת: <strong>{getDisplayName(a.authorId, a.author)}</strong>
-                        </span> &nbsp;
+                      <div className={styles.answerHeaderRow}>
+                       <span className={styles.answerAuthor}>
+                        תגובה מאת: <strong>{getDisplayName(a.authorId, a.author)}</strong>
+                        </span>
                         {(a.authorId === currentUser?.uid || currentUser?.isAdmin) && (
-                          <button onClick={() => handleDeleteAnswer(q.id, i)} className={styles.deleteButton}>
-                            מחק תגובה
-                          </button>
-                        )}
-                      </div>
+                        <button onClick={() => handleDeleteAnswer(q.id, i)} className={styles.deleteButton}>
+                          מחק תגובה   
+                        </button>
+                         )}  
+                        </div>
+
                       <span className={styles.answerText}>{a.text}</span>
                     </li>
                   ))}

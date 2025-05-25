@@ -145,31 +145,34 @@ export default function Tasks() {
       <h2 className={styles.taskSectionTitle}>המשימות שלי</h2>
       <ul className={styles.taskList}>
         {tasks.map((task) => (
-          <li
-            key={task.id}
-            className={task.done ? styles.taskDone : styles.task}
-          >
-            <div className={styles.taskContent}>
-              <input
-                type="checkbox"
-                checked={task.done}
-                onChange={() => toggleTaskDone(task.id, task.done)}
-              />
-              <span className={styles.taskText}>
-                {task.text}
-                <span className={styles.daysLeft}>
-                  ({getDaysLeft(task.due)} ימים נותרו)
-                </span>
-              </span>
-              <span className={styles.taskDate}>עד {task.due}</span>
-              <button
-                onClick={() => handleDeleteTask(task.id)}
-                className={styles.deleteButton}
-              >
-                מחק
-              </button>
-            </div>
-          </li>
+          <li key={task.id} className={task.done ? styles.taskDone : styles.task}>
+  <div className={styles.taskContent}>
+  <div className={styles.taskInfo}>
+    <input
+      type="checkbox"
+      checked={task.done}
+      onChange={() => toggleTaskDone(task.id, task.done)}
+    />
+    <span className={styles.taskText}>
+      {task.text}
+      <span className={styles.daysLeft}>({getDaysLeft(task.due)} ימים נותרו)</span>
+    </span>
+  </div>
+
+  <div className={styles.taskRight}>
+    <span className={styles.taskDate}>עד {task.due}</span>
+    <button
+      onClick={() => handleDeleteTask(task.id)}
+      className={styles.deleteButton}
+    >
+      מחק
+    </button>
+  </div>
+</div>
+
+</li>
+
+
         ))}
       </ul>
     </div>

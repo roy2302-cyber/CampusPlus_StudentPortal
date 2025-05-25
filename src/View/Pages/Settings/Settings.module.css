@@ -171,7 +171,7 @@
 }
 
 
-@media (max-width: 768px) {
+@media (max-width:680px) {
   .checkboxGroup label {
     flex-direction: row-reverse;
     text-align: right;

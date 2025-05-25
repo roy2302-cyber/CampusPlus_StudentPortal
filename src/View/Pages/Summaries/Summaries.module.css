@@ -253,3 +253,98 @@
   opacity: 0;
   cursor: pointer;
 }
+
+
+@media (max-width: 680px) {
+  .summariesContainer {
+    padding: 1rem;
+  }
+
+  .summariesTitle {
+    font-size: 1.4rem;
+    text-align: center;
+  }
+
+  .summariesSubtitle {
+    font-size: 0.95rem;
+    text-align: center;
+  }
+
+  .searchInput {
+    font-size: 0.95rem;
+    padding: 0.6rem;
+  }
+
+  .inputSection {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .summaryInput,
+  .fileInput {
+    font-size: 0.95rem;
+    padding: 0.6rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .uploadButton,
+  .favoritesToggle {
+    font-size: 0.95rem;
+    padding: 0.6rem 1rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .summaryItem {
+    padding: 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .summaryMeta {
+    font-size: 0.8rem;
+  }
+
+  .favoriteBtn {
+    font-size: 1.1rem;
+    top: 0.5rem;
+    left: 0.5rem;
+  }
+
+  .star {
+    font-size: 1.1rem;
+  }
+
+  .alreadyRatedText {
+    font-size: 0.85rem;
+  }
+
+  .previewRatingText {
+    font-size: 0.8rem;
+  }
+
+  .viewLink,
+  .deleteBtn {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.8rem;
+  }
+
+  .linkAndDeleteWrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .fileUploadWrapper {
+    width: 100%;
+    font-size: 0.95rem;
+    padding: 0.6rem;
+    text-align: center;
+  }
+
+  .errorText,
+  .successText {
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+  }
+}

@@ -155,6 +155,15 @@
   font-size: 1rem;
 }
 
+.answerHeaderRow {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+
+
 .likeButton,
 .deleteButton {
   padding: 0.35rem 0.75rem;
@@ -213,3 +222,114 @@
   margin-top: 8px;
 }
 
+
+@media (max-width: 680px) {
+  .communityContainer {
+    padding: 1rem;
+  }
+
+  .communityTitle {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  .communitySubtitle {
+    font-size: 0.95rem;
+    text-align: center;
+  }
+
+  .questionForm {
+    padding: 1rem;
+  }
+
+  .questionInput,
+  .questionTextarea,
+  .answerTextarea {
+    font-size: 0.95rem;
+    padding: 0.6rem;
+  }
+
+  .submitButton {
+    font-size: 0.95rem;
+    padding: 0.5rem 1rem;
+    width: 100%;
+  }
+
+  .questionItem {
+    padding: 1rem;
+  }
+
+  .questionHeading {
+    font-size: 1.2rem;
+  }
+
+  .questionMeta {
+    font-size: 0.9rem;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .questionLabelTitle,
+  .questionLabelContent {
+    font-size: 0.95rem;
+  }
+
+  .questionContent {
+    font-size: 1rem;
+    padding: 0.75rem;
+  }
+
+  .questionHeader,
+  .questionTitleRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .answersTitle {
+    font-size: 1.05rem;
+  }
+
+  .answerItem {
+    padding: 0.5rem 0;
+  }
+
+  .answerText {
+    font-size: 0.95rem;
+  }
+
+  .likeButton,
+.deleteButton {
+  font-size: 0.85rem;
+  padding: 0.4rem 0.75rem;
+  width: 70px;
+  min-width: 70px;
+  text-align: center;
+}
+
+
+
+
+  .errorMessage,
+  .successMessage {
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .actionsRow {
+  display: flex;
+  flex-direction: column-reverse; 
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  
+}
+
+.actionsRow button {
+  width: auto !important;     
+  min-width: fit-content;
+  align-self: flex-start;      
+}
+
+
+}
