@@ -86,7 +86,6 @@ export default function App() {
       {user && !hideNavigation && (
         <header className="app-header">
           <Navigation currentUser={user} setLoggingOut={setLoggingOut} />
-          <h1 className="logo">קמפוס+</h1>
         </header>
       )}
 

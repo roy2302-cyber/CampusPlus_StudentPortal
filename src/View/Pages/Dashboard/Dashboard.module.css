@@ -74,3 +74,42 @@
   color: #1f2937;
   text-align: right;
 }
+
+
+@media (max-width: 680px) {
+  .dashboardContainer {
+    padding: 1rem;
+  }
+
+  .dashboardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .dashboardTitle {
+    font-size: 1.5rem;
+  }
+
+  .statGrid {
+    grid-template-columns: 1fr; 
+    gap: 1rem;
+  }
+
+  .statCard {
+    padding: 1rem;
+  }
+
+  .chartSection {
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+
+  .chartTitle {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+}
+

@@ -163,3 +163,65 @@
   background-color: #d1d5db;
 }
 
+@media (max-width: 680px) {
+  .adminContainer {
+    padding: 1rem;
+  }
+
+  .adminTitle {
+    font-size: 1.25rem;
+    text-align: center;
+  }
+
+  .searchBox {
+    font-size: 0.9rem;
+    padding: 0.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .userTable {
+    font-size: 0.75rem;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .userTable th,
+  .userTable td {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .statGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .statCard {
+    padding: 1rem;
+  }
+
+  .statLabel {
+    font-size: 0.85rem;
+  }
+
+  .statValue {
+    font-size: 1.5rem;
+  }
+
+  .chartTitle {
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .chartSection {
+    padding: 1rem;
+  }
+
+  .save,
+  .cancel {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+    margin-left: 0.25rem;
+  }
+}

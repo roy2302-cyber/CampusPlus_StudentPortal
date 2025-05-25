@@ -3,14 +3,6 @@ body {
   text-align: right;
 }
 
-
-.logo {
-  color: #ea580c;
-  font-size: 1.25rem;
-  font-weight: bold;
-  direction: rtl;
-}
-
 .app-container {
   height: auto;
   width: auto;
@@ -37,7 +29,7 @@ body {
   color: #9ca3af;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 680px) {
   .app-container {
     padding: 1rem;
   }
@@ -66,9 +58,10 @@ body {
     width: 100%;
     font-size: 1rem;
     box-sizing: border-box;
+
+    
   }
-}
 
-
+ }
 
 

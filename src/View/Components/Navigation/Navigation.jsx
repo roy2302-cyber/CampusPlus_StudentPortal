@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom';
 import styles from './Navigation.module.css';
 import { signOut } from 'firebase/auth';
@@ -7,6 +7,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 
 export default function Navigation({ currentUser, setLoggingOut }) {
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false); 
 
   const navItems = [
     { label: "דף הבית", path: "/Home" },
@@ -18,7 +19,6 @@ export default function Navigation({ currentUser, setLoggingOut }) {
   const handleLogout = async () => {
     setLoggingOut(true);
     const uid = auth.currentUser?.uid;
-
     if (uid) {
       const userRef = doc(db, "users", uid);
       try {
@@ -27,15 +27,17 @@ export default function Navigation({ currentUser, setLoggingOut }) {
         console.error("שגיאה בעדכון סטטוס ל־false:", err);
       }
     }
-
     await signOut(auth);
     navigate("/");
   };
 
   return (
     <nav className={styles.navbar}>
-      
-      <div className={styles.navLinks}>
+      <div className={styles.welcomeMessage}>
+        ברוך הבא, {currentUser?.displayName || "משתמש"}!
+      </div>
+
+      <div className={styles.center}>
         {navItems.map(({ label, path }) => (
           <NavLink
             key={path}
@@ -47,7 +49,6 @@ export default function Navigation({ currentUser, setLoggingOut }) {
             {label}
           </NavLink>
         ))}
-
         {currentUser?.isAdmin && (
           <NavLink
             to="/Admin"
@@ -58,16 +59,51 @@ export default function Navigation({ currentUser, setLoggingOut }) {
             ניהול
           </NavLink>
         )}
-
         <button onClick={handleLogout} className={styles.logoutButton}>
           התנתק
         </button>
       </div>
 
-      <span className={styles.welcomeMessage}>
-   ברוך הבא, {currentUser?.displayName || "משתמש"}!
-      </span>
+      <div className={styles.logo}>קמפוס+</div>
 
+      
+      <button
+        className={styles["menu-toggle"]}
+        onClick={() => setMenuOpen(!menuOpen)}
+      >
+        ☰
+      </button>
+
+      
+      <div className={`${styles["mobile-menu"]} ${menuOpen ? styles.show : ""}`}>
+        {navItems.map(({ label, path }) => (
+          <NavLink
+            key={path}
+            to={path}
+            className={({ isActive }) =>
+              isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
+            }
+            onClick={() => setMenuOpen(false)}
+          >
+            {label}
+          </NavLink>
+        ))}
+        {currentUser?.isAdmin && (
+          <NavLink
+            to="/Admin"
+            className={({ isActive }) =>
+              isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
+            }
+            onClick={() => setMenuOpen(false)}
+          >
+            ניהול
+          </NavLink>
+        )}
+        <button onClick={() => { setMenuOpen(false); handleLogout(); }} className={styles.logoutButton}>
+          התנתק
+        </button>
+      </div>
     </nav>
   );
 }
+
