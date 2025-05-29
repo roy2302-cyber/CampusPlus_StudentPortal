@@ -39,7 +39,7 @@ export default function Writing({ currentUser }) {
 
       const unsubDocs = onSnapshot(collection(db, "documents"), (snapshot) => {
   const list = snapshot.docs.map(d => {
-    const docData = d.data(); // ✅ הגדרה נכונה
+    const docData = d.data(); 
     return {
       id: d.id,
       ...docData,
