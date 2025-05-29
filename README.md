@@ -18,9 +18,10 @@ Campus+ was developed as a smart portal for students to manage their learning ex
 
 8. Integration with Firebase Functions, Firestore, Storage And SendGrid
 
+
 ***Live Demo Link***
 https://campusplus-studentportal.web.app
 
 ***Admin Account***
 Email: royye5869@gmail.com
-Password:admin12345
+Password: admin12345
