@@ -12,7 +12,7 @@ Campus+ was developed as a smart portal for students to manage their learning ex
 
 5. Task management with due dates per user
 
-6. User settings including profile visibility, email and SMS notifications
+6. User settings including profile visibility and email notifications
 
 7. Personalized dashboard for each user and admin management tools
 
