@@ -1,7 +1,7 @@
+***Project Description***
+Campus+ was developed as a smart portal for students to manage their learning experience and academic work. The system includes secure registration and login, personal task management, a learning community with questions and responses, a summary-sharing area, an academic writing module with sharing capabilities, a personal management dashboard, and advanced account settings including email notification features.
 
-Campus+ is an interactive support and learning platform developed for students in academic institutions. The system enables sharing of study summaries, task management, Q&A community engagement, academic writing, and profile settings — fully integrated with Firebase and role-based access management.
-
-Key Features Overview
+***Key Features Overview***
 1. User authentication and registration using Firebase Auth
 
 2. Uploading summaries as PDF files with ratings, search functionality, and favorites
@@ -16,11 +16,11 @@ Key Features Overview
 
 7. Personalized dashboard for each user and admin management tools
 
-8. Integration with Firebase Functions, Firestore, Storage, SendGrid, and Twilio
+8. Integration with Firebase Functions, Firestore, Storage And SendGrid
 
-Live Demo Link:
+***Live Demo Link***
 https://campusplus-studentportal.web.app
 
-Admin Account
+***Admin Account***
 Email: royye5869@gmail.com
 Password:admin12345
