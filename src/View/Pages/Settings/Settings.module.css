@@ -171,11 +171,7 @@
 }
 
 
-<<<<<<< HEAD
-@media (max-width: 768px) {
-=======
 @media (max-width:680px) {
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
   .checkboxGroup label {
     flex-direction: row-reverse;
     text-align: right;

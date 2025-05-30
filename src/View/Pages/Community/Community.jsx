@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import styles from './Community.module.css';
-<<<<<<< HEAD
-=======
 import {
   collection,
   addDoc,
@@ -17,7 +15,6 @@ import { db, auth, functions } from "../../../firebase";
 import { httpsCallable } from 'firebase/functions';
 
 const sendEmailNotification = httpsCallable(functions, 'sendEmailNotification');
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
 
 export default function Community({ currentUser }) {
   const [questions, setQuestions] = useState([]);
@@ -29,12 +26,6 @@ export default function Community({ currentUser }) {
   const [successMessage, setSuccessMessage] = useState("");
   const [answerErrors, setAnswerErrors] = useState({});
   const [answerSuccess, setAnswerSuccess] = useState({});
-<<<<<<< HEAD
-
-  const getDisplayName = (uid, fallback) => fallback;
-
-  const handleAddQuestion = () => {
-=======
   const [userSettingsMap, setUserSettingsMap] = useState({});
 
   useEffect(() => {
@@ -87,7 +78,6 @@ export default function Community({ currentUser }) {
   const handleAddQuestion = async () => {
     if (!currentUser?.uid) return;
 
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
     if (!title.trim()) {
       setTitleError("יש למלא כותרת שאלה.");
       setTimeout(() => setTitleError(""), 2000);
@@ -99,19 +89,6 @@ export default function Community({ currentUser }) {
       return;
     }
 
-<<<<<<< HEAD
-    const newQuestion = {
-      id: Date.now().toString(),
-      title,
-      content,
-      author: currentUser?.displayName || "משתמש",
-      authorId: currentUser?.uid || 'demo',
-      likes: [],
-      answers: []
-    };
-
-    setQuestions(prev => [...prev, newQuestion]);
-=======
     setTitleError("");
     setContentError("");
 
@@ -145,20 +122,15 @@ export default function Community({ currentUser }) {
   console.error("שליחת מייל נכשלה:", error);
 }
 
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
     setTitle("");
     setContent("");
     setSuccessMessage("השאלה פורסמה בהצלחה!");
     setTimeout(() => setSuccessMessage(""), 2000);
   };
 
-<<<<<<< HEAD
-  const handleAddAnswer = (questionId, index) => {
-=======
   const handleAddAnswer = async (questionId, index) => {
     if (!currentUser?.uid) return;
 
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
     const answerText = answerInputs[index];
     if (!answerText || !answerText.trim()) {
       setAnswerErrors(prev => ({ ...prev, [index]: "יש להזין תגובה." }));
@@ -166,55 +138,6 @@ export default function Community({ currentUser }) {
       return;
     }
 
-<<<<<<< HEAD
-    setQuestions(prev =>
-      prev.map(q =>
-        q.id === questionId
-          ? { ...q, answers: [...q.answers, { text: answerText, author: currentUser?.displayName || 'משתמש', authorId: currentUser?.uid || 'demo' }] }
-          : q
-      )
-    );
-
-    setAnswerInputs(prev => ({ ...prev, [index]: "" }));
-    setAnswerErrors(prev => ({ ...prev, [index]: "" }));
-    setAnswerSuccess(prev => ({ ...prev, [index]: "התגובה פורסמה בהצלחה!" }));
-    setTimeout(() => setAnswerSuccess(prev => ({ ...prev, [index]: "" })), 2000);
-  };
-
-  const handleLikeToggle = (questionId, likesArray) => {
-    const userId = currentUser?.uid || 'demo';
-    setQuestions(prev =>
-      prev.map(q => {
-        if (q.id === questionId) {
-          const alreadyLiked = q.likes.includes(userId);
-          return {
-            ...q,
-            likes: alreadyLiked ? q.likes.filter(id => id !== userId) : [...q.likes, userId]
-          };
-        }
-        return q;
-      })
-    );
-  };
-
-  const handleDeleteQuestion = (questionId) => {
-    setQuestions(prev => prev.filter(q => q.id !== questionId));
-  };
-
-  const handleDeleteAnswer = (questionId, answerIndex) => {
-    setQuestions(prev =>
-      prev.map(q => {
-        if (q.id === questionId) {
-          const updatedAnswers = [...q.answers];
-          updatedAnswers.splice(answerIndex, 1);
-          return { ...q, answers: updatedAnswers };
-        }
-        return q;
-      })
-    );
-  };
-
-=======
     const question = questions.find(q => q.id === questionId);
 
     try {
@@ -295,7 +218,6 @@ export default function Community({ currentUser }) {
   
 
 
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
   return (
     <div className={styles.communityContainer}>
       <h1 className={styles.communityTitle}> קהילת למידה 👥</h1>
@@ -327,26 +249,6 @@ export default function Community({ currentUser }) {
             <div className={styles.questionHeader}>
               <div className={styles.questionMeta}>
                 <span className={styles.questionLabel}>שאלה מאת:</span>
-<<<<<<< HEAD
-                <span className={styles.questionAuthor}>{getDisplayName(q.authorId, q.author)}</span>
-              </div>
-              <button onClick={() => handleDeleteQuestion(q.id)} className={styles.deleteButton}>מחק שאלה</button>
-            </div>
-
-            <div className={styles.questionTitleRow}>
-              <div style={{ flexGrow: 1 }}>
-                <span className={styles.questionLabelTitle}>נושא השאלה:</span>
-                <h2 className={styles.questionHeading}>{q.title}</h2>
-
-                <span className={styles.questionLabelContent}>תוכן השאלה:</span>
-                <p className={styles.questionContent}>{q.content}</p>
-              </div>
-
-              <button onClick={() => handleLikeToggle(q.id, q.likes)} className={styles.likeButton}>
-                👍 {q.likes?.length || 0}
-              </button>
-            </div>
-=======
                 <span className={styles.questionAuthor}>
                   {getDisplayName(q.authorId, q.author)}
                 </span>
@@ -377,7 +279,6 @@ export default function Community({ currentUser }) {
     </button>
   </div>
 </div>
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
 
             {Array.isArray(q.answers) && q.answers.length > 0 && (
               <div className={styles.answersSection}>
@@ -385,14 +286,6 @@ export default function Community({ currentUser }) {
                 <ul className={styles.answersList}>
                   {q.answers.map((a, i) => (
                     <li key={i} className={styles.answerItem}>
-<<<<<<< HEAD
-                      <div className={styles.answerHeader}>
-                        <span className={styles.answerAuthor}>
-                          תגובה מאת: <strong>{getDisplayName(a.authorId, a.author)}</strong>
-                        </span>
-                        <button onClick={() => handleDeleteAnswer(q.id, i)} className={styles.deleteButton}>מחק תגובה</button>
-                      </div>
-=======
                       <div className={styles.answerHeaderRow}>
                        <span className={styles.answerAuthor}>
                         תגובה מאת: <strong>{getDisplayName(a.authorId, a.author)}</strong>
@@ -404,7 +297,6 @@ export default function Community({ currentUser }) {
                          )}  
                         </div>
 
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
                       <span className={styles.answerText}>{a.text}</span>
                     </li>
                   ))}
@@ -418,11 +310,6 @@ export default function Community({ currentUser }) {
               onChange={(e) => setAnswerInputs({ ...answerInputs, [index]: e.target.value })}
               className={styles.answerTextarea}
             ></textarea>
-<<<<<<< HEAD
-            {answerErrors[index] && <p className={styles.errorMessage}>{answerErrors[index]}</p>}
-            {answerSuccess[index] && <p className={styles.successMessage}>{answerSuccess[index]}</p>}
-            <button onClick={() => handleAddAnswer(q.id, index)} className={styles.submitButton}>הגב</button>
-=======
             {answerErrors[index] && (
               <p className={styles.errorMessage}>{answerErrors[index]}</p>
             )}
@@ -432,14 +319,9 @@ export default function Community({ currentUser }) {
             <button onClick={() => handleAddAnswer(q.id, index)} className={styles.submitButton}>
               הגב
             </button>
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
           </div>
         ))}
       </div>
     </div>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f

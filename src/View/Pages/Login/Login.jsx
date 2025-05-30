@@ -1,16 +1,11 @@
 import { useState } from 'react';
 import styles from './Login.module.css';
 import { useNavigate, Link } from 'react-router-dom';
-<<<<<<< HEAD
-
-export default function Login({ setUser }) {
-=======
 import { signInWithEmailAndPassword, signOut} from 'firebase/auth';
 import { auth, db } from '../../../firebase';
 import { doc, getDoc } from "firebase/firestore";
 
 export default function Login() {
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -27,51 +22,6 @@ export default function Login() {
     return password.length >= 6;
   };
 
-<<<<<<< HEAD
-  const handleLogin = () => {
-    setErrorMessage("");
-    setSuccessMessage("");
-
-    const trimmedEmail = email.trim();
-    const trimmedPassword = password.trim();
-
-    if (!trimmedEmail || !trimmedPassword) {
-      setErrorMessage("נא למלא את כל השדות");
-      return;
-    }
-
-    if (!validateEmail(trimmedEmail)) {
-      setErrorMessage("כתובת האימייל אינה תקינה");
-      return;
-    }
-
-    if (!validatePassword(trimmedPassword)) {
-      setErrorMessage("הסיסמה חייבת להכיל לפחות 6 תווים");
-      return;
-    }
-
-    setLoading(true);
-    setTimeout(() => {
-      const savedUser = JSON.parse(localStorage.getItem("registeredUser"));
-
-      if (
-        savedUser &&
-        savedUser.email === trimmedEmail &&
-        savedUser.password === trimmedPassword
-      ) {
-        localStorage.setItem("loggedInUser", JSON.stringify(savedUser));
-        setUser(savedUser); // עדכון המשתמש בלוגיקה הראשית
-
-        setSuccessMessage("התחברת בהצלחה! מעביר...");
-        setTimeout(() => navigate("/home"), 1500);
-      } else {
-        setErrorMessage("פרטי ההתחברות שגויים. נסה שוב.");
-      }
-
-      setLoading(false);
-    }, 1000);
-  };
-=======
   const handleLogin = async () => {
   setErrorMessage("");
   setSuccessMessage("");
@@ -136,7 +86,6 @@ export default function Login() {
     setLoading(false);
   }
 };
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
 
   return (
     <div className={styles.loginContainer}>

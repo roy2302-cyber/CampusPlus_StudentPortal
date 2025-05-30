@@ -1,14 +1,9 @@
 import { useState } from 'react';
-<<<<<<< HEAD
-import { useNavigate } from 'react-router-dom';
-import styles from './Register.module.css';
-=======
 import styles from './Register.module.css';
 import { useNavigate, Link } from 'react-router-dom';
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db } from "../../../firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
 
 export default function Register() {
   const [fullName, setFullName] = useState("");
@@ -18,17 +13,6 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-<<<<<<< HEAD
-
-  const navigate = useNavigate();
-
-  const handleRegister = () => {
-    setErrorMessage("");
-    setSuccessMessage("");
-
-    if (!fullName.trim() || !email.trim() || !phone.trim() || !password || !confirmPassword) {
-      setErrorMessage("נא למלא את כל השדות");
-=======
   const navigate = useNavigate();
 
   const handleRegister = async () => {
@@ -55,22 +39,10 @@ export default function Register() {
 
     if (!email.trim()) {
       showError("יש להזין כתובת אימייל");
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-<<<<<<< HEAD
-    const phoneRegex = /^\+\d{10,15}$/;
-
-    if (!emailRegex.test(email)) {
-      setErrorMessage("כתובת האימייל אינה תקינה");
-      return;
-    }
-
-    if (!phoneRegex.test(phone)) {
-      setErrorMessage("מספר הטלפון צריך להיות בפורמט בינלאומי (לדוגמה +972...)");
-=======
     if (!emailRegex.test(email)) {
       showError("כתובת האימייל אינה תקינה");
       return;
@@ -89,44 +61,20 @@ export default function Register() {
 
     if (!password) {
       showError("יש להזין סיסמה");
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
       return;
     }
 
     if (password.length < 6) {
-<<<<<<< HEAD
-      setErrorMessage("הסיסמה חייבת להכיל לפחות 6 תווים");
-=======
       showError("הסיסמה חייבת להכיל לפחות 6 תווים");
       return;
     }
 
     if (!confirmPassword) {
       showError("יש להזין אימות סיסמה");
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
       return;
     }
 
     if (password !== confirmPassword) {
-<<<<<<< HEAD
-      setErrorMessage("אימות הסיסמה לא תואם לסיסמה");
-      return;
-    }
-
-    const newUser = {
-      fullName: fullName.trim(),
-      email: email.trim(),
-      phone: phone.trim(),
-      password: password,
-    };
-
-    localStorage.setItem("registeredUser", JSON.stringify(newUser));
-
-    setSuccessMessage("נרשמת בהצלחה! מעביר למסך התחברות...");
-    setTimeout(() => {
-      navigate("/");
-    }, 2000);
-=======
       showError("אימות הסיסמה לא תואם לסיסמה");
       return;
     }
@@ -177,7 +125,6 @@ export default function Register() {
   showError(message);
 }
 
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
   };
 
   return (
@@ -186,65 +133,37 @@ export default function Register() {
 
       <div className={styles.formGroup}>
         <label className={styles.formLabel}>שם מלא</label>
-<<<<<<< HEAD
-        <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-=======
         <input type="text" className={styles.formInput} value={fullName} onChange={(e) => setFullName(e.target.value)} />
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
       </div>
 
       <div className={styles.formGroup}>
         <label className={styles.formLabel}>אימייל</label>
-<<<<<<< HEAD
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      </div>
-
-      <div className={styles.formGroup}>
-        <label className={styles.formLabel}>טלפון</label>
-        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
-=======
         <input type="email" className={styles.formInput} value={email} onChange={(e) => setEmail(e.target.value)} />
       </div>
 
       <div className={styles.formGroup}>
         <label className={styles.formLabel}>מספר טלפון (בפורמט בינלאומי)</label>
         <input type="tel" className={styles.formInput} value={phone} onChange={(e) => setPhone(e.target.value)} />
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
       </div>
 
       <div className={styles.formGroup}>
         <label className={styles.formLabel}>סיסמה</label>
-<<<<<<< HEAD
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-      </div>
-
-      <div className={styles.formGroup}>
-        <label className={styles.formLabel}>אימות סיסמה</label>
-        <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-=======
         <input type="password" className={styles.formInput} value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
 
       <div className={styles.formGroup}>
         <label className={styles.formLabel}>אישור סיסמה</label>
         <input type="password" className={styles.formInput} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
       </div>
 
       {errorMessage && <p className={styles.errorText}>{errorMessage}</p>}
       {successMessage && <p className={styles.successText}>{successMessage}</p>}
 
-<<<<<<< HEAD
-      <button onClick={handleRegister} className={styles.registerButton}>
-        הירשם
-      </button>
-=======
       <button onClick={handleRegister} className={styles.registerButton}>צור חשבון</button>
 
       <p className={styles.registerPrompt}>
         כבר יש לך חשבון? <Link to="/" className={styles.registerLink}>התחבר כאן</Link>
       </p>
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
     </div>
   );
 }

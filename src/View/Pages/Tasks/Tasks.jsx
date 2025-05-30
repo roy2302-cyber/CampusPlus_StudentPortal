@@ -1,25 +1,3 @@
-<<<<<<< HEAD
-import { useState } from 'react';
-import styles from './Tasks.module.css';
-
-export default function Tasks() {
-  const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState('');
-  const [dueDate, setDueDate] = useState('');
-  const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-
-  const handleAddTask = () => {
-    if (!newTask.trim()) {
-      setError('יש להזין שם למשימה');
-      setTimeout(() => setError(''), 2000);
-      return;
-    }
-
-    if (!dueDate) {
-      setError('יש לבחור תאריך יעד');
-      setTimeout(() => setError(''), 2000);
-=======
 import { useState, useEffect } from 'react';
 import styles from './Tasks.module.css';
 import { db, auth } from "../../../firebase";
@@ -64,35 +42,10 @@ export default function Tasks() {
     if (!dueDate.trim()) {
       setError("יש לבחור תאריך יעד");
       setTimeout(() => setError(""), 2000);
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
       return;
     }
 
     const today = new Date();
-<<<<<<< HEAD
-    const selected = new Date(dueDate);
-    today.setHours(0, 0, 0, 0);
-    selected.setHours(0, 0, 0, 0);
-
-    if (selected < today) {
-      setError('לא ניתן לבחור תאריך מהעבר');
-      setTimeout(() => setError(''), 2000);
-      return;
-    }
-
-    const newTaskObj = {
-      id: Date.now(),
-      text: newTask,
-      due: formatDate(dueDate),
-      done: false,
-    };
-
-    setTasks([...tasks, newTaskObj]);
-    setSuccessMessage('המשימה נוספה בהצלחה!');
-    setTimeout(() => setSuccessMessage(''), 2000);
-    setNewTask('');
-    setDueDate('');
-=======
     const selectedDate = new Date(dueDate);
     today.setHours(0, 0, 0, 0);
     selectedDate.setHours(0, 0, 0, 0);
@@ -141,7 +94,6 @@ export default function Tasks() {
     } catch (err) {
       console.error("שגיאה במחיקת משימה:", err);
     }
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
   };
 
   const formatDate = (dateStr) => {
@@ -150,24 +102,6 @@ export default function Tasks() {
   };
 
   const getDaysLeft = (dueStr) => {
-<<<<<<< HEAD
-    const [day, month, year] = dueStr.split('/').map(Number);
-    const due = new Date(year, month - 1, day);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const diff = due - today;
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
-  };
-
-  const toggleDone = (taskId) => {
-    setTasks(tasks.map((task) =>
-      task.id === taskId ? { ...task, done: !task.done } : task
-    ));
-  };
-
-  const deleteTask = (taskId) => {
-    setTasks(tasks.filter((task) => task.id !== taskId));
-=======
     const [day, month, year] = dueStr.split("/").map(Number);
     const dueDate = new Date(year, month - 1, day);
     const today = new Date();
@@ -175,16 +109,11 @@ export default function Tasks() {
     const diffTime = dueDate - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
   };
 
   return (
     <div className={styles.tasksContainer}>
-<<<<<<< HEAD
-      <h1 className={styles.tasksTitle}>מעקב משימות</h1>
-=======
       <h1 className={styles.tasksTitle}>מעקב משימות ✅</h1>
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
       <p className={styles.tasksSubtitle}>נהל את כל המטלות שלך במקום אחד</p>
 
       <div className={styles.taskBox}>
@@ -193,13 +122,8 @@ export default function Tasks() {
           type="text"
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
-<<<<<<< HEAD
-          className={styles.taskInput}
-          placeholder="לדוגמה: סיים עבודה בקורס"
-=======
           placeholder="משימה חדשה"
           className={styles.taskInput}
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
         />
 
         <label className={styles.inputLabel}>תאריך יעד:</label>
@@ -222,23 +146,6 @@ export default function Tasks() {
       <ul className={styles.taskList}>
         {tasks.map((task) => (
           <li key={task.id} className={task.done ? styles.taskDone : styles.task}>
-<<<<<<< HEAD
-            <div className={styles.taskContent}>
-              <input
-                type="checkbox"
-                checked={task.done}
-                onChange={() => toggleDone(task.id)}
-              />
-              <span className={styles.taskText}>
-                {task.text} ({getDaysLeft(task.due)} ימים נותרו)
-              </span>
-              <span className={styles.taskDate}>עד {task.due}</span>
-              <button onClick={() => deleteTask(task.id)} className={styles.deleteButton}>
-                מחק
-              </button>
-            </div>
-          </li>
-=======
   <div className={styles.taskContent}>
   <div className={styles.taskInfo}>
     <input
@@ -266,13 +173,8 @@ export default function Tasks() {
 </li>
 
 
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
         ))}
       </ul>
     </div>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f

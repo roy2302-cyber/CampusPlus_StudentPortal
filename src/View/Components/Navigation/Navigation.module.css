@@ -1,11 +1,5 @@
 .navbar {
   display: flex;
-<<<<<<< HEAD
-  flex-wrap: wrap;
-  justify-content: space-between; 
-  align-items: center;
-  direction: rtl;
-=======
   justify-content: space-between;
   align-items: center;
   text-align: initial !important;
@@ -48,7 +42,6 @@
   order: 1;
   margin-left: auto;
   white-space: nowrap;
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
 }
 
 .navLink {
@@ -58,10 +51,7 @@
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
   transition: background-color 0.3s;
-<<<<<<< HEAD
-=======
   white-space: nowrap;
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
 }
 
 .navLink:hover {
@@ -76,60 +66,6 @@
 .logoutButton {
   background: none;
   border: none;
-<<<<<<< HEAD
-  padding: 0.25rem 0.75rem; 
-  margin-right: 0;
-  color: #374151; 
-  font-size: 0.9rem; 
-  cursor: pointer;
-  border-radius: 999px;
-  text-decoration: none;
-  font-weight: normal;
-  transition: background-color 0.3s, color 0.2s;
-}
-
-.logoutButton:hover {
-  background-color: #f3f4f6; 
-  color: #ea580c; 
-  font-weight: bold;
-}
-
-.logoutButton.active {
-  background-color: #ea580c;
-  color: white;
-}
-
-
-.welcomeMessage {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 1rem;
-  border-radius: 999px;
-
-  font-family: 'Segoe UI', 'Rubik', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 500;
-  line-height: 1.4;
-  color: #15803d; 
-  
-  background-color: #dcfce7; 
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.welcomeMessage:hover {
-  background-color: #bbf7d0; 
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-
-
-
-
-
-=======
   padding: 0.25rem 0.75rem;
   color: #374151;
   font-size: 0.9rem;
@@ -228,5 +164,4 @@
 }
 
 }
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
 

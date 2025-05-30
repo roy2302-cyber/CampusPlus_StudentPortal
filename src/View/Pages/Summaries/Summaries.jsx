@@ -1,57 +1,3 @@
-<<<<<<< HEAD
-import { useState } from 'react';
-import styles from './Summaries.module.css';
-
-export default function Summaries() {
-  const [summaries, setSummaries] = useState([]);
-  const [title, setTitle] = useState('');
-  const [file, setFile] = useState(null);
-  const [favorites, setFavorites] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-
-  const handleAddSummary = () => {
-    setErrorMessage('');
-    setSuccessMessage('');
-
-    if (!title.trim()) {
-      setErrorMessage('יש להזין כותרת לסיכום');
-      return;
-    }
-    if (!file) {
-      setErrorMessage('יש לבחור קובץ להעלאה');
-      return;
-    }
-
-    const newSummary = {
-      id: Date.now(),
-      title,
-      fileName: file.name,
-      uploader: 'משתמש דמו',
-      author: 'משתמש דמו',
-      fileUrl: '#',
-      ratings: {},
-    };
-
-    setSummaries(prev => [...prev, newSummary]);
-    setTitle('');
-    setFile(null);
-    setSuccessMessage('הסיכום הועלה בהצלחה!');
-  };
-
-  const handleDelete = (id) => {
-    const confirmDelete = window.confirm('האם אתה בטוח שברצונך למחוק את הסיכום?');
-    if (!confirmDelete) return;
-    setSummaries(prev => prev.filter(s => s.id !== id));
-    setSuccessMessage('הסיכום נמחק בהצלחה!');
-  };
-
-  const toggleFavorite = (title) => {
-    setFavorites(prev =>
-      prev.includes(title) ? prev.filter(t => t !== title) : [...prev, title]
-=======
 import { useState, useEffect } from 'react';
 import styles from './Summaries.module.css';
 import { db } from '../../../firebase';
@@ -238,7 +184,6 @@ export default function Summaries({ currentUser }) {
         {halfStar && <span>⭐️</span>}
         {Array(emptyStars).fill('☆').map((s, i) => <span key={`e${i}`}>{s}</span>)}
       </span>
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
     );
   };
 
@@ -251,15 +196,11 @@ export default function Summaries({ currentUser }) {
   return (
     <div className={styles.summariesContainer}>
       <h1 className={styles.summariesTitle}> אוסף סיכומים 📚</h1>
-<<<<<<< HEAD
-      <p className={styles.summariesSubtitle}>מצא סיכומים לפי קורס, העלה קבצים ושמור לתיק אישי.</p>
-=======
       <p className={styles.summariesSubtitle}>מצא סיכומים לפי קורס, העלה קבצים, דרג ושמור לתיק אישי.</p>
 
       {!currentUser && (
         <p className={styles.errorText}> חובה להתחבר כדי להעלות ולדרג סיכומים</p>
       )}
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
 
       <input
         type="text"
@@ -302,13 +243,8 @@ export default function Summaries({ currentUser }) {
       </div>
 
       <ul className={styles.summaryList}>
-<<<<<<< HEAD
-        {filteredSummaries.map((summary) => (
-          <li key={summary.id} className={styles.summaryItem}>
-=======
         {filteredSummaries.map((summary, index) => (
           <li key={index} className={styles.summaryItem}>
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
             <strong>{summary.title}</strong>
             <button
               onClick={() => toggleFavorite(summary.title)}
@@ -318,11 +254,6 @@ export default function Summaries({ currentUser }) {
               {favorites.includes(summary.title) ? '❤️' : '🤍'}
             </button>
             <div className={styles.summaryMeta}>
-<<<<<<< HEAD
-              הועלה ע"י: {summary.author} <br />
-              <a href={summary.fileUrl} className={styles.viewLink}>צפייה בקובץ 📄</a>
-              <button onClick={() => handleDelete(summary.id)} className={styles.deleteBtn}>מחק סיכום</button>
-=======
               הועלה ע"י: {
                 summary.showAuthor || summary.uploader === currentUser?.uid || currentUser?.isAdmin
                   ? summary.author
@@ -378,7 +309,6 @@ export default function Summaries({ currentUser }) {
                   </p>
                 )}
               </div>
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
             </div>
           </li>
         ))}

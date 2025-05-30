@@ -11,11 +11,7 @@ node_modules
 
 dist-ssr
 *.local
-<<<<<<< HEAD
-
-=======
 dist/
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
 .env
 .vscode/*
 !.vscode/extensions.json

@@ -155,8 +155,6 @@
   font-size: 1rem;
 }
 
-<<<<<<< HEAD
-=======
 .answerHeaderRow {
   display: flex;
   justify-content: flex-start;
@@ -166,7 +164,6 @@
 
 
 
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
 .likeButton,
 .deleteButton {
   padding: 0.35rem 0.75rem;
@@ -225,8 +222,6 @@
   margin-top: 8px;
 }
 
-<<<<<<< HEAD
-=======
 
 @media (max-width: 680px) {
   .communityContainer {
@@ -338,4 +333,3 @@
 
 
 }
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f

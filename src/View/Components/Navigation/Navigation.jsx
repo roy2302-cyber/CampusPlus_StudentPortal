@@ -1,22 +1,3 @@
-<<<<<<< HEAD
-import { NavLink, useNavigate } from 'react-router-dom';
-import styles from './Navigation.module.css';
-
-export default function Navigation({ currentUser, setUser }) {
-  const navigate = useNavigate();
-
-  const navItems = [
-    { label: "דף הבית", path: "/home" },
-    { label: "הגדרות", path: "/settings" },
-    { label: "עזרה", path: "/help" },
-    { label: "דשבורד", path: "/dashboard" },
-    { label: "ניהול", path: "/admin" } 
-  ];
-
-  const handleLogout = () => {
-    localStorage.removeItem("loggedInUser");
-    setUser(null); 
-=======
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom';
 import styles from './Navigation.module.css';
@@ -47,21 +28,16 @@ export default function Navigation({ currentUser, setLoggingOut }) {
       }
     }
     await signOut(auth);
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
     navigate("/");
   };
 
   return (
     <nav className={styles.navbar}>
-<<<<<<< HEAD
-      <div className={styles.navLinks}>
-=======
       <div className={styles.welcomeMessage}>
         ברוך הבא, {currentUser?.displayName || "משתמש"}!
       </div>
 
       <div className={styles.center}>
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
         {navItems.map(({ label, path }) => (
           <NavLink
             key={path}
@@ -73,9 +49,6 @@ export default function Navigation({ currentUser, setLoggingOut }) {
             {label}
           </NavLink>
         ))}
-<<<<<<< HEAD
-
-=======
         {currentUser?.isAdmin && (
           <NavLink
             to="/Admin"
@@ -86,20 +59,11 @@ export default function Navigation({ currentUser, setLoggingOut }) {
             ניהול
           </NavLink>
         )}
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
         <button onClick={handleLogout} className={styles.logoutButton}>
           התנתק
         </button>
       </div>
 
-<<<<<<< HEAD
-      <span className={styles.welcomeMessage}>
-        ברוך הבא, {currentUser?.fullName || "משתמש"}!
-      </span>
-    </nav>
-  );
-}
-=======
       <div className={styles.logo}>קמפוס+</div>
 
       
@@ -143,4 +107,3 @@ export default function Navigation({ currentUser, setLoggingOut }) {
   );
 }
 
->>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
