@@ -1,0 +1,76 @@
+.dashboardContainer {
+  padding: 2rem;
+  background-color: #f3f4f6;
+  direction: rtl;
+  font-family: 'Heebo', sans-serif;
+}
+
+.dashboardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.dashboardTitle {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.statCard {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.statLabel {
+  font-size: 1rem;
+  color: #4b5563;
+  margin-bottom: 0.25rem;
+}
+
+.statValue {
+  font-size: 1.75rem;
+  font-weight: bold;
+}
+
+.statValue.green {
+  color: #10b981;
+}
+
+.statValue.blue {
+  color: #2563eb;
+}
+
+.statValue.purple {
+  color: #9333ea;
+}
+
+.statValue.orange {
+  color: #f97316;
+}
+
+.chartSection {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.chartTitle {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #1f2937;
+  text-align: right;
+}
