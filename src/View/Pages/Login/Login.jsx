@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import styles from './Login.module.css';
 import { useNavigate, Link } from 'react-router-dom';
-import { signInWithEmailAndPassword, signOut} from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, browserSessionPersistence } from 'firebase/auth';
 import { auth, db } from '../../../firebase';
 import { doc, getDoc } from "firebase/firestore";
 
@@ -11,6 +11,7 @@ export default function Login() {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
   const validateEmail = (email) => {
@@ -45,23 +46,26 @@ export default function Login() {
   }
 
   try {
-    setLoading(true);
-    const userCredential = await signInWithEmailAndPassword(auth, trimmedEmail, trimmedPassword);
-    const uid = userCredential.user.uid;
+  setLoading(true);
 
+  const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
+  await setPersistence(auth, persistenceType);
 
-    const userDoc = await getDoc(doc(db, "users", uid));
-    const userData = userDoc.data();
+  const userCredential = await signInWithEmailAndPassword(auth, trimmedEmail, trimmedPassword);
+  const uid = userCredential.user.uid;
 
-   if (userData?.removed) {
+  const userDoc = await getDoc(doc(db, "users", uid));
+  const userData = userDoc.data();
+
+  if (userData?.removed) {
     await signOut(auth); 
     setErrorMessage("הגישה שלך הוסרה על ידי מנהל המערכת");
     return;
-    }
+  }
 
-    setSuccessMessage("התחברת בהצלחה! מעביר...");
-    setTimeout(() => navigate("/home"), 1500);
-  } catch (error) {
+  setSuccessMessage("התחברת בהצלחה! מעביר...");
+  setTimeout(() => navigate("/home"), 1500);
+ } catch (error) {
   let message = "שגיאה כללית בהתחברות";
   switch (error.code) {
     case "auth/user-not-found":
@@ -110,6 +114,17 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
+      <div className={styles.formGroup}>
+      <div className={styles.checkboxGroup}>
+      <input
+    type="checkbox"
+    checked={rememberMe}
+    onChange={(e) => setRememberMe(e.target.checked)}
+    id="rememberMe"
+  />
+  <label htmlFor="rememberMe">זכור אותי!</label>
+</div>
+</div>
 
       {errorMessage && <p className={styles.errorText}>{errorMessage}</p>}
       {successMessage && <p className={styles.successText}>{successMessage}</p>}

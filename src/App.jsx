@@ -90,7 +90,7 @@ export default function App() {
       )}
 
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={user ? <Navigate to="/home" /> : <Login />} />
         <Route path="/register" element={<Register />} />
 
         {user ? (
