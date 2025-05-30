@@ -1,9 +1,15 @@
 import { useState } from 'react';
 import styles from './Login.module.css';
 import { useNavigate, Link } from 'react-router-dom';
-import { signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, browserSessionPersistence } from 'firebase/auth';
+import {
+  signInWithEmailAndPassword,
+  signOut,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence
+} from 'firebase/auth';
 import { auth, db } from '../../../firebase';
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc } from 'firebase/firestore';
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -24,72 +30,72 @@ export default function Login() {
   };
 
   const handleLogin = async () => {
-  setErrorMessage("");
-  setSuccessMessage("");
+    setErrorMessage("");
+    setSuccessMessage("");
 
-  const trimmedEmail = email.trim();
-  const trimmedPassword = password.trim();
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
 
-  if (!trimmedEmail || !trimmedPassword) {
-    setErrorMessage("נא למלא את כל השדות");
-    return;
-  }
+    if (!trimmedEmail || !trimmedPassword) {
+      setErrorMessage("נא למלא את כל השדות");
+      return;
+    }
 
-  if (!validateEmail(trimmedEmail)) {
-    setErrorMessage("כתובת האימייל אינה תקינה");
-    return;
-  }
+    if (!validateEmail(trimmedEmail)) {
+      setErrorMessage("כתובת האימייל אינה תקינה");
+      return;
+    }
 
-  if (!validatePassword(trimmedPassword)) {
-    setErrorMessage("הסיסמה חייבת להיות באורך של לפחות 6 תווים");
-    return;
-  }
+    if (!validatePassword(trimmedPassword)) {
+      setErrorMessage("הסיסמה חייבת להיות באורך של לפחות 6 תווים");
+      return;
+    }
 
-  try {
-  setLoading(true);
+    try {
+      setLoading(true);
 
-  const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
-  await setPersistence(auth, persistenceType);
+      const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
+      await setPersistence(auth, persistenceType);
 
-  const userCredential = await signInWithEmailAndPassword(auth, trimmedEmail, trimmedPassword);
-  const uid = userCredential.user.uid;
+      const userCredential = await signInWithEmailAndPassword(auth, trimmedEmail, trimmedPassword);
+      const uid = userCredential.user.uid;
 
-  const userDoc = await getDoc(doc(db, "users", uid));
-  const userData = userDoc.data();
+      const userDoc = await getDoc(doc(db, "users", uid));
+      const userData = userDoc.data();
 
-  if (userData?.removed) {
-    await signOut(auth); 
-    setErrorMessage("הגישה שלך הוסרה על ידי מנהל המערכת");
-    return;
-  }
+      if (userData?.removed) {
+        await signOut(auth);
+        setErrorMessage("הגישה שלך הוסרה על ידי מנהל המערכת");
+        return;
+      }
 
-  setSuccessMessage("התחברת בהצלחה! מעביר...");
-  setTimeout(() => navigate("/home"), 1500);
- } catch (error) {
-  let message = "שגיאה כללית בהתחברות";
-  switch (error.code) {
-    case "auth/user-not-found":
-      message = "האימייל לא קיים במערכת";
-      break;
-    case "auth/wrong-password":
-      message = "הסיסמה שגויה";
-      break;
-    case "auth/invalid-email":
-      message = "כתובת האימייל אינה תקינה";
-      break;
-    case "auth/too-many-requests":
-      message = "יותר מדי ניסיונות כושלים. נסה שוב מאוחר יותר.";
-      break;
-    default:
-      message = "שגיאה בהתחברות: " + error.message;
-  }
+      setSuccessMessage("התחברת בהצלחה! מעביר...");
+      setTimeout(() => navigate("/home"), 1500);
+    } catch (error) {
+      let message = "שגיאה כללית בהתחברות";
 
-  setErrorMessage(message);
-}
- finally {
-    setLoading(false);
-  }
-};
+      switch (error.code) {
+        case "auth/user-not-found":
+          message = "האימייל לא קיים במערכת";
+          break;
+        case "auth/wrong-password":
+          message = "הסיסמה שגויה";
+          break;
+        case "auth/invalid-email":
+          message = "כתובת האימייל אינה תקינה";
+          break;
+        case "auth/too-many-requests":
+          message = "יותר מדי ניסיונות כושלים. נסה שוב מאוחר יותר.";
+          break;
+        default:
+          message = "שגיאה בהתחברות: " + error.message;
+      }
+
+      setErrorMessage(message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={styles.loginContainer}>
@@ -114,17 +120,18 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
+
       <div className={styles.formGroup}>
-      <div className={styles.checkboxGroup}>
-      <input
-    type="checkbox"
-    checked={rememberMe}
-    onChange={(e) => setRememberMe(e.target.checked)}
-    id="rememberMe"
-  />
-  <label htmlFor="rememberMe">זכור אותי!</label>
-</div>
-</div>
+        <div className={styles.checkboxGroup}>
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            id="rememberMe"
+          />
+          <label htmlFor="rememberMe">זכור אותי!</label>
+        </div>
+      </div>
 
       {errorMessage && <p className={styles.errorText}>{errorMessage}</p>}
       {successMessage && <p className={styles.successText}>{successMessage}</p>}
