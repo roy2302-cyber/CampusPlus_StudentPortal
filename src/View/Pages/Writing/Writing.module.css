@@ -393,3 +393,100 @@
   margin-bottom: 8px;
 }
 
+<<<<<<< HEAD
+=======
+@media (max-width: 680px) {
+  .writingContainer {
+    padding: 1rem;
+  }
+
+  .pageTitleBlue {
+    font-size: 1.4rem;
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+    gap: 0.3rem;
+  }
+
+  .pageSubtitle {
+    font-size: 1rem;
+  }
+
+  .topicInput,
+  .textArea,
+  .editInput,
+  .editTextarea {
+    font-size: 0.95rem;
+    padding: 0.6rem;
+  }
+
+  .fileUploadLabel,
+  .shareButton,
+  .saveButton,
+  .deleteBtn,
+  .editBtn,
+  .saveEditBtn,
+  .cancelEditBtn,
+  .shareBtn {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+  }
+
+  .fileName {
+    font-size: 0.85rem;
+    margin-right: 0;
+  }
+
+  .selectInput {
+    width: 100%;
+    min-width: unset;
+    font-size: 0.85rem;
+  }
+
+  .selectUser {
+    width: 100%;
+    font-size: 0.85rem;
+  }
+
+  .buttonWrapper {
+    text-align: center;
+  }
+
+  .inlineButtons,
+  .editButtons,
+  .shareRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .sharedHeader,
+  .editForm,
+  .documentItem {
+    padding: 12px;
+  }
+
+  .sharedLabel {
+    font-size: 1rem;
+  }
+
+  .sharedTopic {
+    font-size: 1rem;
+  }
+
+  .sharedBy,
+  .sharedDate,
+  .documentMeta {
+    font-size: 0.85rem;
+  }
+
+  .documentContent {
+    font-size: 0.95rem;
+  }
+
+  .errorMessage,
+  .successMessage {
+    font-size: 0.9rem;
+    padding: 10px 14px;
+  }
+}
+>>>>>>> 74af6948e33a77384475732cde0e72eb7630115f

@@ -1,9 +1,54 @@
 .navbar {
   display: flex;
+<<<<<<< HEAD
   flex-wrap: wrap;
   justify-content: space-between; 
   align-items: center;
   direction: rtl;
+=======
+  justify-content: space-between;
+  align-items: center;
+  text-align: initial !important;
+  direction: rtl;
+  padding: 1rem;
+  gap: 1rem;
+  width: 100%;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  position: relative;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #ea580c;
+  white-space: nowrap;
+  order: 3;
+  margin-right: auto;
+  cursor: pointer;
+}
+
+.center {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-grow: 1;
+  flex-wrap: nowrap;
+  order: 2;
+}
+
+.welcomeMessage {
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #15803d;
+  background-color: #dcfce7;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+  order: 1;
+  margin-left: auto;
+  white-space: nowrap;
+>>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
 }
 
 .navLink {
@@ -13,6 +58,10 @@
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
   transition: background-color 0.3s;
+<<<<<<< HEAD
+=======
+  white-space: nowrap;
+>>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
 }
 
 .navLink:hover {
@@ -27,6 +76,7 @@
 .logoutButton {
   background: none;
   border: none;
+<<<<<<< HEAD
   padding: 0.25rem 0.75rem; 
   margin-right: 0;
   color: #374151; 
@@ -79,4 +129,104 @@
 
 
 
+=======
+  padding: 0.25rem 0.75rem;
+  color: #374151;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 999px;
+  transition: background-color 0.3s, color 0.2s;
+  white-space: nowrap;
+}
+
+.logoutButton:hover {
+  background-color: #f3f4f6;
+  color: #ea580c;
+  font-weight: bold;
+}
+
+.welcomeMessage:hover {
+  background-color: #bbf7d0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  order: 4;
+}
+
+.mobile-menu {
+  display: none;
+}
+
+
+
+@media (max-width: 680px) {
+  .navbar {
+    flex-direction: row;
+    align-items: center;
+    padding: 0.5rem;
+    justify-content: space-between;
+    position: relative;
+  }
+
+  .logo {
+    order: 3;
+    font-size: 1rem;
+  }
+
+  .menu-toggle {
+    display: block;
+    color: #ea580c;
+    order: 1;
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 1001;
+  }
+
+  .welcomeMessage {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.8rem;
+    position: absolute;
+    top: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+  }
+
+  .center {
+    display: none;
+  }
+.menu-toggle {
+  width: auto !important;
+  font-size: 1.5rem !important;
+}
+  .navLink,
+  .logoutButton {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+  }
+
+.mobile-menu.show {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: fixed;
+  top: 60px;
+  right: 10px;
+  background: #fff;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  min-width: 150px;
+}
+
+}
+>>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
 

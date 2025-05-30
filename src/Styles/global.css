@@ -3,6 +3,7 @@ body {
   text-align: right;
 }
 
+<<<<<<< HEAD
 
 .logo {
   color: #ea580c;
@@ -11,6 +12,8 @@ body {
   direction: rtl;
 }
 
+=======
+>>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
 .app-container {
   height: auto;
   width: auto;
@@ -37,7 +40,11 @@ body {
   color: #9ca3af;
 }
 
+<<<<<<< HEAD
 @media (max-width: 600px) {
+=======
+@media (max-width: 680px) {
+>>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
   .app-container {
     padding: 1rem;
   }
@@ -66,9 +73,17 @@ body {
     width: 100%;
     font-size: 1rem;
     box-sizing: border-box;
+<<<<<<< HEAD
   }
 }
 
 
+=======
+
+    
+  }
+
+ }
+>>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
 
 

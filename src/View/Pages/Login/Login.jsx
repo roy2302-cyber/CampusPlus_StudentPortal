@@ -1,8 +1,16 @@
 import { useState } from 'react';
 import styles from './Login.module.css';
 import { useNavigate, Link } from 'react-router-dom';
+<<<<<<< HEAD
 
 export default function Login({ setUser }) {
+=======
+import { signInWithEmailAndPassword, signOut} from 'firebase/auth';
+import { auth, db } from '../../../firebase';
+import { doc, getDoc } from "firebase/firestore";
+
+export default function Login() {
+>>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -19,6 +27,7 @@ export default function Login({ setUser }) {
     return password.length >= 6;
   };
 
+<<<<<<< HEAD
   const handleLogin = () => {
     setErrorMessage("");
     setSuccessMessage("");
@@ -62,6 +71,72 @@ export default function Login({ setUser }) {
       setLoading(false);
     }, 1000);
   };
+=======
+  const handleLogin = async () => {
+  setErrorMessage("");
+  setSuccessMessage("");
+
+  const trimmedEmail = email.trim();
+  const trimmedPassword = password.trim();
+
+  if (!trimmedEmail || !trimmedPassword) {
+    setErrorMessage("נא למלא את כל השדות");
+    return;
+  }
+
+  if (!validateEmail(trimmedEmail)) {
+    setErrorMessage("כתובת האימייל אינה תקינה");
+    return;
+  }
+
+  if (!validatePassword(trimmedPassword)) {
+    setErrorMessage("הסיסמה חייבת להיות באורך של לפחות 6 תווים");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    const userCredential = await signInWithEmailAndPassword(auth, trimmedEmail, trimmedPassword);
+    const uid = userCredential.user.uid;
+
+
+    const userDoc = await getDoc(doc(db, "users", uid));
+    const userData = userDoc.data();
+
+   if (userData?.removed) {
+    await signOut(auth); 
+    setErrorMessage("הגישה שלך הוסרה על ידי מנהל המערכת");
+    return;
+    }
+
+    setSuccessMessage("התחברת בהצלחה! מעביר...");
+    setTimeout(() => navigate("/home"), 1500);
+  } catch (error) {
+  let message = "שגיאה כללית בהתחברות";
+  switch (error.code) {
+    case "auth/user-not-found":
+      message = "האימייל לא קיים במערכת";
+      break;
+    case "auth/wrong-password":
+      message = "הסיסמה שגויה";
+      break;
+    case "auth/invalid-email":
+      message = "כתובת האימייל אינה תקינה";
+      break;
+    case "auth/too-many-requests":
+      message = "יותר מדי ניסיונות כושלים. נסה שוב מאוחר יותר.";
+      break;
+    default:
+      message = "שגיאה בהתחברות: " + error.message;
+  }
+
+  setErrorMessage(message);
+}
+ finally {
+    setLoading(false);
+  }
+};
+>>>>>>> 74af6948e33a77384475732cde0e72eb7630115f
 
   return (
     <div className={styles.loginContainer}>
