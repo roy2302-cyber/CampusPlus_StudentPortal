@@ -19,7 +19,7 @@ export default function Navigation({ currentUser, setLoggingOut }) {
   const handleLogout = async () => {
   setLoggingOut(true);
 
-  // שומרים את ה־uid מראש לפני שמתבצעת ההתנתקות
+
   const uid = auth.currentUser?.uid;
 
   if (uid) {
