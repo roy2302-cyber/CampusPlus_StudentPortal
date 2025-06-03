@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import styles from './Register.module.css';
 import { useNavigate, Link } from 'react-router-dom';
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile,signOut} from "firebase/auth";
 import { auth, db } from "../../../firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
@@ -100,9 +100,11 @@ export default function Register() {
           profileVisibility: false,
           dataSharing: true
         }
-      });
+      })
 
+      await signOut(auth);
       showSuccess("נרשמת בהצלחה! מעביר אותך למסך התחברות...");
+
     } catch (error) {
   let message = "שגיאה כללית בהרשמה";
   switch (error.code) {

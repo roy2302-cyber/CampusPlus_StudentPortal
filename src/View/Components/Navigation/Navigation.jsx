@@ -17,19 +17,27 @@ export default function Navigation({ currentUser, setLoggingOut }) {
   ];
 
   const handleLogout = async () => {
-    setLoggingOut(true);
-    const uid = auth.currentUser?.uid;
-    if (uid) {
+  setLoggingOut(true);
+
+  // שומרים את ה־uid מראש לפני שמתבצעת ההתנתקות
+  const uid = auth.currentUser?.uid;
+
+  if (uid) {
+    try {
       const userRef = doc(db, "users", uid);
-      try {
-        await updateDoc(userRef, { active: false });
-      } catch (err) {
-        console.error("שגיאה בעדכון סטטוס ל־false:", err);
-      }
+      await updateDoc(userRef, { active: false });
+    } catch (err) {
+      console.error("שגיאה בעדכון סטטוס ל־false:", err);
     }
+  }
+
+  try {
     await signOut(auth);
     navigate("/");
-  };
+  } catch (err) {
+    console.error("שגיאה בהתנתקות:", err);
+  }
+};
 
   return (
     <nav className={styles.navbar}>
